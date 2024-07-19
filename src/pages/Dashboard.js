@@ -4,7 +4,7 @@ import '../styles/Dashboard.css';
 
 const Dashboard = () => {
     const callData = [
-        { type: "Actionable Calls", total: 4500, qa: 225, pending: 220, icon: "fas fa-phone-alt", color: "#007bff" },
+        { type: "Actionablee Calls", total: 4500, qa: 225, pending: 220, icon: "fas fa-phone-alt", color: "#007bff" },
         { type: "Abusive Calls", total: 4500, qa: 225, pending: 220, icon: "fas fa-exclamation-circle", color: "#dc3545" },
         { type: "Missed Calls", total: 4500, qa: 225, pending: 220, icon: "fas fa-times-circle", color: "#6c757d" },
         { type: "Non Voice Signal", total: 4500, qa: 225, pending: 220, icon: "fas fa-wave-square", color: "#17a2b8" },
