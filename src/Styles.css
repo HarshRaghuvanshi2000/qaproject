@@ -1,0 +1,54 @@
+/* src/styles.css */
+
+/* Basic styles for layout */
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+}
+
+.header .logo a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.5em;
+}
+
+.sidebar {
+    background-color: #f0f0f0;
+    width: 200px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    padding-top: 60px; /* Adjust based on header height */
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px;
+}
+
+.content {
+    margin-left: 200px; /* Same as sidebar width */
+    padding: 20px;
+}
+
+.page-content {
+    padding: 20px;
+}
+
+/* Media query for responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100px;
+    }
+
+    .content {
+        margin-left: 100px;
+    }
+}
