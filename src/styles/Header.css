@@ -1,6 +1,6 @@
 /* src/styles/Header.css */
 
-.header {
+.custom-header {
     background-color: #f8f9fa;
     padding: 10px 20px;
     display: flex;
@@ -13,59 +13,59 @@
     z-index: 1001;
 }
 
-.header-title {
+.custom-header-title {
     color: #0e4f95;
     font-weight: bold;
 }
 
-.header-content {
+.custom-header-content {
     display: flex;
     align-items: center;
     width: 100%;
     justify-content: space-between;
 }
 
-.user-info {
+.custom-user-info {
     display: flex;
     align-items: center;
     position: relative;
 }
 
-.current-time {
+.custom-current-time {
     margin-right: 15px;
     font-size: 1em;
     color: #101010;
 }
 
-.profile-pic {
+.custom-profile-pic {
     width: 50px;
     height: 50px;
     border-radius: 50%;
     margin-right: 15px;
 }
 
-.user-details {
+.custom-user-details {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     margin-right: 15px;
 }
 
-.user-name {
+.custom-user-name {
     font-weight: bold;
     color: #343a40;
 }
 
-.user-designation {
+.custom-user-designation {
     font-size: 0.8em;
     color: #6c757d;
 }
 
-.dropdown {
+.custom-dropdown {
     position: relative;
 }
 
-.dropdown-toggle {
+.custom-dropdown-toggle {
     background: none;
     border: none;
     color: #007bff;
@@ -75,7 +75,7 @@
     align-items: center;
 }
 
-.dropdown-menu {
+.custom-dropdown-menu {
     position: absolute;
     top: calc(100% + 10px); /* Add margin from the top */
     right: 0;
@@ -88,7 +88,7 @@
     overflow: hidden; /* Ensure it doesn't overflow */
 }
 
-.dropdown-item {
+.custom-dropdown-item {
     display: flex;
     align-items: center;
     padding: 10px;
@@ -98,19 +98,24 @@
     width: 100%;
     text-align: left;
     color: #141515;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 5px;
 }
 
-.dropdown-item:hover {
-    background-color: #f8f9fa;
+.custom-dropdown-item:hover {
+    background-color: #0e4f95;
+    color: #fff;
 }
 
-.dropdown-icon {
+.custom-dropdown-icon {
     margin-right: 10px;
-    color: #827c7c; /* Adjust color as needed */
+    color: #007bff; /* Updated icon color */
 }
 
 button {
-    background-color: #082e56;
+    background-color: #0e4f95;
     color: #fff;
     border: none;
     padding: 8px 12px;
@@ -118,8 +123,10 @@ button {
     cursor: pointer;
     display: flex;
     align-items: center;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
     background-color: #0056b3;
+    transform: scale(1.05);
 }

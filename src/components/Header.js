@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Ensure correct import
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Header.css';
 import profile_logo from '../assets/images/profile_logo.png';
 import { FaChevronDown, FaSignOutAlt } from 'react-icons/fa';
@@ -8,6 +8,7 @@ const Header = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -17,11 +18,21 @@ const Header = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLogout = () => {
-    // Clear token from local storage
-    localStorage.removeItem('token');
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
 
-    // Redirect to login page
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
     navigate('/login');
   };
 
@@ -30,29 +41,39 @@ const Header = () => {
   };
 
   const formatDate = (date) => {
-    const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const options = {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    };
     return date.toLocaleDateString('en-US', options);
   };
 
   return (
-    <header className="header">
-      <div className="header-content">
-        <h5 className="header-title">Quality Assurance Management System, Dial 112, Haryana</h5>
-        <div className="user-info">
-          <span className="current-time">{formatDate(currentTime)}</span>
-          <img src={profile_logo} alt="Profile" className="profile-pic" />
-          <div className="user-details">
-            <span className="user-name">Anjali</span>
-            <span className="user-designation">SCO</span>
+    <header className="custom-header">
+      <div className="custom-header-content">
+        <h5 className="custom-header-title">
+          Quality Assurance Management System, Dial 112, Haryana
+        </h5>
+        <div className="custom-user-info">
+          <span className="custom-current-time">{formatDate(currentTime)}</span>
+          <img src={profile_logo} alt="Profile" className="custom-profile-pic" />
+          <div className="custom-user-details">
+            <span className="custom-user-name">Anjali</span>
+            <span className="custom-user-designation">SCO</span>
           </div>
-          <div className="dropdown">
-            <button onClick={toggleDropdown} className="dropdown-toggle">
+          <div className="custom-dropdown" ref={dropdownRef}>
+            <button onClick={toggleDropdown} className="custom-dropdown-toggle">
               <FaChevronDown />
             </button>
             {dropdownOpen && (
-              <div className="dropdown-menu">
-                <button onClick={handleLogout} className="dropdown-item">
-                  <FaSignOutAlt className="dropdown-icon" />
+              <div className="custom-dropdown-menu">
+                <button onClick={handleLogout} className="custom-dropdown-item">
+                  <FaSignOutAlt className="custom-dropdown-icon" />
                   Log Out
                 </button>
               </div>
