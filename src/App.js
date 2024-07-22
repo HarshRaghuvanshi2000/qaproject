@@ -15,8 +15,6 @@ const AppContent = () => {
     const location = useLocation();
     const shouldShowHeaderAndSidebar = location.pathname !== '/login' && location.pathname !== '/';
 
-    console.log("Current path:", location.pathname); // Debugging log
-    console.log("Should show header and sidebar:", shouldShowHeaderAndSidebar); // Debugging log
 
     return (
         <>
