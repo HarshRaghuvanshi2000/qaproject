@@ -3,6 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faSort } from '@fortawesome/free-solid-svg-icons';
 import '../styles/AdminSettings.css';
+import '../App.css';
+
 
 const AdminSettings = () => {
     const [showModal, setShowModal] = useState(false);
@@ -57,8 +59,7 @@ const AdminSettings = () => {
     };
 
     return (
-        <div className="admin-settings-wrapper">
-            <div className="admin-settings-container">
+            <div className="main-content">
                 <h1 className="admin-title">Admin Settings</h1>
                 <div className="table-container-settings">
                     <div className="table-responsive">
@@ -141,7 +142,6 @@ const AdminSettings = () => {
                     </div>
                 )}
             </div>
-        </div>
     );
 };
 

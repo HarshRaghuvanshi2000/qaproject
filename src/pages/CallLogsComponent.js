@@ -3,6 +3,8 @@ import '../styles/CallLogsComponent.css';
 import { FaPlay, FaPause } from 'react-icons/fa';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
+import '../App.css';
+
 
 const sampleAudioFiles = Array.from({ length: 80 }, (_, index) => ({
     id: index + 1,
@@ -77,7 +79,7 @@ const CallLogsComponent = () => {
     };
 
     return (
-        <div className="call-logs-container">
+        <div className="main-content">
             <h1 className="admin-title">Actionable Call Logs</h1>
             <div className="call-logs-content">
                 <div className="table-container">

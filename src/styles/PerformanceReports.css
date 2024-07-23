@@ -1,10 +1,4 @@
-.performance-reports {
-    padding: 20px;
-    margin-left: 250px; /* Adjust this margin to account for the width of the fixed sidebar */
-    margin-top: 60px;
-    background-color: #f5f5f5;
-    min-height: 100vh;  /* Adjust according to the width of your sidebar */
-}
+
 .performance-title{
     text-align: left; /* Align to the left */
     margin-bottom: 5px;

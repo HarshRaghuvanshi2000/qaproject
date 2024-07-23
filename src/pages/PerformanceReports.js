@@ -5,6 +5,8 @@ import { Table, Button, Form, Row, Col, Pagination } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import '../App.css';
+
 
 const generateSampleData = (numRows, reportType) => {
     const data = [];
@@ -126,7 +128,7 @@ const PerformanceReports = () => {
     };
 
     return (
-        <div className="performance-reports">
+        <div className="main-content">
             <h1 className="performance-title">Performance Reports</h1>
             <div className="filters mb-3">
                 <Row>
@@ -154,8 +156,11 @@ const PerformanceReports = () => {
                     <Col md={2}>
                         <Form.Group controlId="selectShift">
                             <Form.Label>Select Shift</Form.Label>
-                            <Form.Control as="select">
+                            <Form.Control as="select" defaultValue="All">
                                 <option>All</option>
+                                <option>Morning Shift: 8 AM - 2 PM</option>
+                                <option>Afternoon Shift: 2 PM - 8 PM</option>
+                                <option>Night Shift: 8 PM - 8 AM</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>

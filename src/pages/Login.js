@@ -7,6 +7,8 @@ import { faUser, faLock, faEye, faEyeSlash, faExclamationTriangle } from '@forta
 import logo from '../assets/images/logo_hry112.png';
 import { login } from '../services/api'; // Import your login API function
 import { useNavigate } from 'react-router-dom';
+import '../App.css';
+
 
 const Login = () => {
     const navigate = useNavigate();

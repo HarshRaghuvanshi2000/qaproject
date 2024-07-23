@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Dashboard.css';
+import '../App.css';
+
 
 const Dashboard = () => {
     const callData = [
@@ -16,9 +18,7 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="dashboard-container">
             <div className="main-content">
-                <div className="dashboard-content">
                     <h1 className="dashboard-title">Call Logs</h1>
                     <div className="call-log-sections">
                         {callData.map((call, index) => (
@@ -51,8 +51,6 @@ const Dashboard = () => {
                         ))}
                     </div>
                 </div>
-            </div>
-        </div>
     );
 };
 

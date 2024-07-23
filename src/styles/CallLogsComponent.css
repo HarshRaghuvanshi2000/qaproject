@@ -1,14 +1,4 @@
-/* Adjust margins and flex settings according to sidebar and header */
-.call-logs-container {
-    margin-left: 260px; /* Adjust this margin to account for the width of the fixed sidebar */
-    margin-top: 60px; /* Adjust this margin to account for the height of the fixed header */
-    padding: 20px;
-    background-color: #f5f5f5;
-    min-height: calc(100vh - 60px); /* Adjust to account for the header height */
-    display: flex;
-    flex-direction: column;
-    width: calc(100% - 260px); /* Adjust to account for the sidebar width */
-}
+
 
 .call-logs-title {
     text-align: left; /* Align to the left */

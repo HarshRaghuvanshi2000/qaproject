@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import '../styles/DetailedReport.css';
+import '../App.css';
 import { Table, Pagination, Dropdown } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
@@ -102,7 +103,7 @@ const DetailedReport = () => {
     };
 
     return (
-        <div className="detailed-report">
+        <div className="main-content">
             <div className="header-container">
                 <h1 className="detailed-title">SCO3251 - Detailed Report</h1>
                 <div className="date-range">01-01-2024 To 01-02-2024</div>

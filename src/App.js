@@ -7,46 +7,40 @@ import PerformanceReports from './pages/PerformanceReports';
 import AdminSettings from './pages/AdminSettings';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import CallLogsComponent from './components/CallLogsComponent';
+import CallLogsComponent from './pages/CallLogsComponent';
 import DetailedReport from './pages/DetailedReport';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppContent = () => {
     const location = useLocation();
-    const shouldShowHeaderAndSidebar = location.pathname !== '/login' && location.pathname !== '/';
+    const shouldShowHeaderAndSidebar = !['/login', '/'].includes(location.pathname);
 
     return (
         <>
-            {shouldShowHeaderAndSidebar && <Sidebar />}
-            {shouldShowHeaderAndSidebar && <Header />}
+            {shouldShowHeaderAndSidebar && (
+                <>
+                    <Sidebar />
+                    <Header />
+                </>
+            )}
             <Routes>
+                <Route path="/" element={<Login />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/" element={<Login />} /> {/* Default route to login */}
-                <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                        <Dashboard />
-                    </ProtectedRoute>
-                } />
-                <Route path="/performance-reports" element={
-                    <ProtectedRoute>
-                        <PerformanceReports />
-                    </ProtectedRoute>
-                } />
-                <Route path="/admin-settings" element={
-                    <ProtectedRoute>
-                        <AdminSettings />
-                    </ProtectedRoute>
-                } />
-                <Route path="/call-logs" element={
-                    <ProtectedRoute>
-                        <CallLogsComponent />
-                    </ProtectedRoute>
-                } />
-                <Route path="/detailed-report" element={
-                    <ProtectedRoute>
-                        <DetailedReport />
-                    </ProtectedRoute>
-                } />
+                {['/dashboard', '/performance-reports', '/admin-settings', '/call-logs', '/detailed-report'].map((path) => (
+                    <Route
+                        key={path}
+                        path={path}
+                        element={
+                            <ProtectedRoute>
+                                {path === '/dashboard' && <Dashboard />}
+                                {path === '/performance-reports' && <PerformanceReports />}
+                                {path === '/admin-settings' && <AdminSettings />}
+                                {path === '/call-logs' && <CallLogsComponent />}
+                                {path === '/detailed-report' && <DetailedReport />}
+                            </ProtectedRoute>
+                        }
+                    />
+                ))}
             </Routes>
         </>
     );
