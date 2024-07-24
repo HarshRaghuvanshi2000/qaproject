@@ -1,0 +1,61 @@
+import React, { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { FaBars, FaPhoneAlt, FaCog, FaFileAlt } from 'react-icons/fa';
+import logo from '../assets/images/logo_hry112.png';
+import '../styles/Sidebar.css';
+
+const Sidebar = () => {
+    const [isOpen, setIsOpen] = useState(true); // Default to true to show the sidebar
+    const location = useLocation();
+    const getActiveClass = (path) => (location.pathname.startsWith(path) ? 'active-link' : '');
+
+    const toggleSidebar = () => {
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <>
+            <button className="sidebar-toggle" onClick={toggleSidebar}>
+                <FaBars />
+            </button>
+            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+                <div className="sidebar-content">
+                    <img src={logo} alt="Logo" className="logo" />
+                    <div className="sidebar-heading">
+                        <p className="heading">Quality Assurance</p>
+                    </div>
+                    <nav>
+                        <ul>
+                            <li>
+                                <NavLink
+                                    to="/dashboard"
+                                    className={getActiveClass('/dashboard')}
+                                >
+                                    <FaPhoneAlt className="icon" /> Call Logs
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/performance-reports"
+                                    className={getActiveClass('/performance-reports')}
+                                >
+                                    <FaFileAlt className="icon" /> Performance Reports
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/admin-settings"
+                                    className={getActiveClass('/admin-settings')}
+                                >
+                                    <FaCog className="icon" /> Admin Settings
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+        </>
+    );
+};
+
+export default Sidebar;

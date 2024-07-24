@@ -1,0 +1,85 @@
+
+.performance-title{
+    text-align: left; /* Align to the left */
+    margin-bottom: 5px;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #004085; /* Darker blue color */
+    padding-bottom: 5px;
+}
+
+.filters .col {
+    display: flex;
+    align-items: center;
+}
+
+.filters .col .dropdown,
+.filters .col .form-control,
+.filters .col .btn {
+    flex: 1;
+}
+
+.items-per-page {
+    margin-right: 20px;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    border-radius: 0.25rem;
+}
+
+.pagination-container {
+    margin-top: 20px;
+}
+
+.pagination .page-item .page-link {
+    border-radius: 50%;
+    margin: 0 5px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #0c345f;
+    color: #0c345f;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0c345f;
+    color: white;
+    border: 1px solid #0c345f;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #0c345f;
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    cursor: pointer;
+}
+
+.table th.sorting:after {
+    content: '\f0dc'; /* FontAwesome unicode for sort */
+}
+
+.table th.sorting_asc:after {
+    content: '\f0de'; /* FontAwesome unicode for sort-up */
+}
+
+.table th.sorting_desc:after {
+    content: '\f0dd'; /* FontAwesome unicode for sort-down */
+}
