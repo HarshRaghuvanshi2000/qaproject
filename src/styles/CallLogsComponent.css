@@ -2,11 +2,11 @@
 
 .call-logs-title {
     text-align: left; /* Align to the left */
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-size: 1.8em;
     font-weight: bold;
     color: #004085; /* Darker blue color */
-    padding-bottom: 5px;
+    padding-bottom: 10px;
 }
 
 /* Flex container to hold the table and other content side by side */

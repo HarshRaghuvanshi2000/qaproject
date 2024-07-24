@@ -80,7 +80,7 @@ const CallLogsComponent = () => {
 
     return (
         <div className="main-content">
-            <h1 className="admin-title">Actionable Call Logs</h1>
+            <h1 className="call-logs-title">Actionable Call Logs</h1>
             <div className="call-logs-content">
                 <div className="table-container">
                     <table className="table call-logs-table">

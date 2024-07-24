@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/PerformanceReports.css';
 import { Link } from 'react-router-dom';
-import { Table, Button, Form, Row, Col, Pagination } from 'react-bootstrap';
+import { Table, Button, Form, Row, Col, Pagination,Dropdown } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import '../App.css';
 
@@ -168,10 +169,19 @@ const PerformanceReports = () => {
                         <Button variant="primary" className="w-100">Search</Button>
                     </Col>
                     <Col md={1} className="d-flex align-items-end">
-                        <Button variant="success" className="w-100" onClick={downloadExcel}>Excel</Button>
-                    </Col>
-                    <Col md={1} className="d-flex align-items-end">
-                        <Button variant="danger" className="w-100" onClick={downloadPDF}>PDF</Button>
+                    <Dropdown className="export-dropdown">
+                    <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                        Export
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={downloadPDF} className="export-option">
+                            <FaFilePdf style={{ color: 'red' }} /> Export PDF
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={downloadExcel} className="export-option">
+                            <FaFileExcel style={{ color: 'green' }} /> Export Excel
+                        </Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
                     </Col>
                 </Row>
             </div>

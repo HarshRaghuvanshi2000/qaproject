@@ -42,18 +42,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #007bff;
-    color: #007bff;
+    border: 1px solid #0c345f;
+    color: #0c345f;
 }
 
 .pagination .page-item.active .page-link {
-    background-color: #007bff;
+    background-color: #0c345f;
     color: white;
-    border: 1px solid #007bff;
+    border: 1px solid #0c345f;
 }
 
 .pagination .page-item .page-link:hover {
-    background-color: #007bff;
+    background-color: #0c345f;
     color: white;
 }
 

@@ -8,10 +8,13 @@
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: fixed;
+    top: 0; /* Ensure it's fixed to the top */
     width: calc(100% - 250px); /* Adjust this based on sidebar width */
     left: 250px; /* Adjust this based on sidebar width */
     z-index: 1001;
+    margin: 0; /* Ensure no margins are applied */
 }
+
 
 .custom-header-title {
     color: #0e4f95;

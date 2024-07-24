@@ -1,11 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import '../styles/DetailedReport.css';
 import '../App.css';
-import { Table, Pagination, Dropdown } from 'react-bootstrap';
-import { jsPDF } from 'jspdf';
+import { Pagination, Dropdown } from 'react-bootstrap';
 import 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSort } from '@fortawesome/free-solid-svg-icons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const generateSampleData = (numRows) => {
     const data = [];
@@ -30,43 +34,31 @@ const generateSampleData = (numRows) => {
 const DetailedReport = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(12);
-    const [sortConfig, setSortConfig] = useState(null);
-    const data = generateSampleData(100);
-
-    const sortedData = useMemo(() => {
-        let sortableData = [...data];
-        if (sortConfig !== null) {
-            sortableData.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
-        return sortableData;
-    }, [data, sortConfig]);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+    const [data, setData] = useState(generateSampleData(100));
 
     const requestSort = (key) => {
         let direction = 'ascending';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
             direction = 'descending';
         }
         setSortConfig({ key, direction });
-    };
-
-    const getClassNamesFor = (name) => {
-        if (!sortConfig) {
-            return;
-        }
-        return sortConfig.key === name ? sortConfig.direction : undefined;
+        let sortedData = [...data];
+        sortedData.sort((a, b) => {
+            if (a[key] < b[key]) {
+                return direction === 'ascending' ? -1 : 1;
+            }
+            if (a[key] > b[key]) {
+                return direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+        setData(sortedData);
     };
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -88,30 +80,56 @@ const DetailedReport = () => {
 
     const handleExportPDF = () => {
         const doc = new jsPDF();
-        doc.autoTable({
-            head: [['Sr. No', 'Event Type', 'Event Subtype', 'Call Duration', 'Review Status', 'Call Type', 'Compliance of SOP QA Score', 'Active Listening & Proper Response QA Score', 'Correct and Relevant Details Capturing QA Score', 'Correct Address Tagging QA Score', 'Call Handled Time QA Time']],
-            body: data.map(item => [item.srNo, item.eventType, item.eventSubtype, item.callDuration, item.reviewStatus, item.callType, item.sopScore, item.listeningScore, item.detailsCapturingScore, item.addressTaggingScore, item.handledTime]),
+        doc.setFontSize(16);
+        doc.text('SCO3251 - Detailed Report', 14, 22);
+        doc.setFontSize(12);
+        doc.text('Date : 01-01-2024 To 01-02-2024', 14, 30);
+
+        autoTable(doc, {
+            startY: 40,
+            head: [['Sr. No', 'Event Type', 'Event Subtype', 'Call Duration', 'Review Status', 'Call Type', 'SOP QA Score', 'Listening QA Score', 'Capturing QA Score', 'Address QA Score', 'Handled Time']],
+            body: data.map(item => [
+                item.srNo,
+                item.eventType,
+                item.eventSubtype,
+                item.callDuration,
+                item.reviewStatus,
+                item.callType,
+                item.sopScore,
+                item.listeningScore,
+                item.detailsCapturingScore,
+                item.addressTaggingScore,
+                item.handledTime
+            ])
         });
-        doc.save('detailed_report.pdf');
+
+        doc.save('detailed-report.pdf');
     };
 
     const handleExportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Detailed Report');
-        XLSX.writeFile(workbook, 'detailed_report.xlsx');
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Detailed Report');
+
+        const header = [
+            ['SCO3251 - Detailed Report'],
+            ['Date Range: 01-01-2024 To 01-02-2024'],
+        ];
+
+        const wsHeader = XLSX.utils.aoa_to_sheet(header, { origin: 'A1' });
+        XLSX.utils.book_append_sheet(wb, wsHeader, 'Header');
+        XLSX.writeFile(wb, 'detailed-report.xlsx');
     };
 
     return (
         <div className="main-content">
             <div className="header-container">
                 <h1 className="detailed-title">SCO3251 - Detailed Report</h1>
-                <div className="date-range">01-01-2024 To 01-02-2024</div>
+                <div className="date-range">Date : 01-01-2024 To 01-02-2024</div>
                 <Dropdown className="export-dropdown">
                     <Dropdown.Toggle variant="primary" id="dropdown-basic">
                         Export
                     </Dropdown.Toggle>
-
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={handleExportPDF} className="export-option">
                             <FaFilePdf style={{ color: 'red' }} /> Export PDF
@@ -122,38 +140,65 @@ const DetailedReport = () => {
                     </Dropdown.Menu>
                 </Dropdown>
             </div>
-            <div className="table-responsive">
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            {['srNo', 'eventType', 'eventSubtype', 'callDuration', 'reviewStatus', 'callType', 'sopScore', 'listeningScore', 'detailsCapturingScore', 'addressTaggingScore', 'handledTime'].map((key) => (
-                                <th key={key} onClick={() => requestSort(key)} className={getClassNamesFor(key)}>
-                                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                                    {sortConfig && sortConfig.key === key && (
-                                        sortConfig.direction === 'ascending' ? ' 🔼' : ' 🔽'
-                                    )}
+            <div className="table-container-settings">
+                <div className="table-responsive">
+                    <table className="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th onClick={() => requestSort('srNo')}>
+                                    Sr. No <FontAwesomeIcon icon={faSort} />
                                 </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentItems.map((item, index) => (
-                            <tr key={index}>
-                                <td>{item.srNo}</td>
-                                <td>{item.eventType}</td>
-                                <td>{item.eventSubtype}</td>
-                                <td>{item.callDuration}</td>
-                                <td>{item.reviewStatus}</td>
-                                <td>{item.callType}</td>
-                                <td>{item.sopScore}</td>
-                                <td>{item.listeningScore}</td>
-                                <td>{item.detailsCapturingScore}</td>
-                                <td>{item.addressTaggingScore}</td>
-                                <td>{item.handledTime}</td>
+                                <th onClick={() => requestSort('eventType')}>
+                                    Event Type <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('eventSubtype')}>
+                                    Event Subtype <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('callDuration')}>
+                                    Call Duration <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('reviewStatus')}>
+                                    Review Status <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('callType')}>
+                                    Call Type <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('sopScore')}>
+                                    SOP QA Score <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('listeningScore')}>
+                                    Listening QA Score <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('detailsCapturingScore')}>
+                                    Capturing QA Score <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('addressTaggingScore')}>
+                                    Address QA Score <FontAwesomeIcon icon={faSort} />
+                                </th>
+                                <th onClick={() => requestSort('handledTime')}>
+                                    Handled Time <FontAwesomeIcon icon={faSort} />
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
+                        </thead>
+                        <tbody>
+                            {currentItems.map((item, index) => (
+                                <tr key={index}>
+                                    <td>{item.srNo}</td>
+                                    <td>{item.eventType}</td>
+                                    <td>{item.eventSubtype}</td>
+                                    <td>{item.callDuration}</td>
+                                    <td>{item.reviewStatus}</td>
+                                    <td>{item.callType}</td>
+                                    <td>{item.sopScore}</td>
+                                    <td>{item.listeningScore}</td>
+                                    <td>{item.detailsCapturingScore}</td>
+                                    <td>{item.addressTaggingScore}</td>
+                                    <td>{item.handledTime}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div className="pagination-container">
                 <Pagination className="justify-content-center">
