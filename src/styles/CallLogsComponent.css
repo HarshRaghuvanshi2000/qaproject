@@ -44,8 +44,11 @@
 
 .audio-player-section {
     margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
 .audio-player-section h3 {
     margin-bottom: 10px;
 }
@@ -54,8 +57,7 @@
 audio {
     width: 100%;
     margin-bottom: 20px;
-}
-
+} 
 /* Call information section styles */
 .call-information {
     margin-bottom: 20px;
@@ -159,4 +161,79 @@ form button[type="submit"]:hover {
     background-color: #003366;
     color: #fff;
     border: 1px solid #003366;
+}
+.call-logs-table tr.playing {
+    background-color: #0d4678; /* Light blue background */
+    font-weight: bold; /* Make text bold */
+}
+
+/* Optionally, add some padding or borders for better visibility */
+.call-logs-table tr.playing td {
+    padding: 10px;
+    background-color: #f0f8ff; /* Light blue background */
+    border: 1px solid #d6e9f5;
+}
+/* Custom container styles */
+.rhap_container {
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: 10px;
+    border: 1px solid #a7a8aa; /* Dark blue border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom play/pause button styles */
+.rhap_main-controls .rhap_play_pause-button {
+    color: #4208a1; /* Dark blue color */
+    background-color: #ffffff; /* White background */
+}
+
+.rhap_main-controls .rhap_play_pause-button:hover {
+    color: #0056b3; /* Slightly lighter blue on hover */
+}
+
+/* Custom progress bar styles */
+.rhap_progress-bar {
+    background-color: #e9ecef; /* Light gray background */
+    border-radius: 3px;
+}
+
+.rhap_progress-bar .rhap_progress-filled {
+    background-color: #004085; /* Dark blue progress */
+}
+
+/* Custom volume bar styles */
+.rhap_volume-bar {
+    background-color: #e9ecef; /* Light gray background */
+    border-radius: 3px;
+}
+
+.rhap_volume-bar .rhap_volume-filled {
+    background-color: #004085; /* Dark blue volume progress */
+}
+
+/* Custom indicators */
+.rhap_progress-indicator {
+    background-color: #004085; /* Dark blue indicator */
+}
+
+.rhap_volume-indicator {
+    color: #004085; /* Dark blue volume icon */
+}
+
+/* Custom loop button styles */
+.rhap_loop--on {
+    color: #084587; /* Dark blue color when loop is on */
+}
+
+.rhap_loop--off {
+    color: #6c757d; /* Gray color when loop is off */
+}
+
+/* Custom paused and playing status */
+.rhap_play-status--paused .rhap_progress-bar {
+    background-color: #e9ecef; /* Light gray when paused */
+}
+
+.rhap_play-status--playing .rhap_progress-bar {
+    background-color: #e9ecef; /* Dark blue when playing */
 }

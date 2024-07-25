@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/PerformanceReports.css';
 import { Link } from 'react-router-dom';
-import { Table, Button, Form, Row, Col, Pagination,Dropdown } from 'react-bootstrap';
+import { Table, Button, Form, Row, Col, Dropdown } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import '../App.css';
-
 
 const generateSampleData = (numRows, reportType) => {
     const data = [];
@@ -47,13 +46,25 @@ const PerformanceReports = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
     const [data, setData] = useState(generateSampleData(30, reportType));
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         setData(generateSampleData(100, reportType));
     }, [reportType]);
 
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const filteredData = data.filter(item => {
+        return Object.values(item).some(val =>
+            val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
+
     const sortedData = React.useMemo(() => {
-        let sortableData = [...data];
+        if (!filteredData) return [];
+        let sortableData = [...filteredData];
         if (sortConfig !== null) {
             sortableData.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -66,7 +77,7 @@ const PerformanceReports = () => {
             });
         }
         return sortableData;
-    }, [data, sortConfig]);
+    }, [filteredData, sortConfig]);
 
     const requestSort = key => {
         let direction = 'ascending';
@@ -105,19 +116,37 @@ const PerformanceReports = () => {
         pageNumbers.push(i);
     }
 
+    const renderPageNumbers = () => {
+        return (
+            <>
+                {currentPage > 1 && (
+                    <li key="prev" onClick={() => paginate(currentPage - 1)}>&laquo;</li>
+                )}
+                {pageNumbers.map(number => (
+                    <li key={number} className={number === currentPage ? 'active' : ''} onClick={() => paginate(number)}>
+                        {number}
+                    </li>
+                ))}
+                {currentPage < totalPages && (
+                    <li key="next" onClick={() => paginate(currentPage + 1)}>&raquo;</li>
+                )}
+            </>
+        );
+    };
+
     const downloadPDF = () => {
         const doc = new jsPDF();
         const tableColumn = reportType === "CO performance"
             ? ["Name", "Login ID", "Total Calls", "Total Completed Calls", "Average Call Duration", "SOP Score", "Active Listening Score", "Details Capturing Score", "Address Tagging Score", "Handled Time", "Average Score"]
             : ["Name", "Login ID", "QA Calls", "Completed QA", "Average QA Completion Time", "Average Pending QA Per Day", "Detailed Report"];
-        
+
         const tableRows = data.map(row => Object.values(row));
-        
+
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
         });
-        
+
         doc.save("report.pdf");
     };
 
@@ -130,7 +159,16 @@ const PerformanceReports = () => {
 
     return (
         <div className="main-content">
-            <h1 className="performance-title">Performance Reports</h1>
+            <div className="title-and-search">
+                <h1 className="performance-title">Performance Reports</h1>
+                <Form.Control
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="search-bar"
+                />
+            </div>
             <div className="filters mb-3">
                 <Row>
                     <Col md={2}>
@@ -169,19 +207,19 @@ const PerformanceReports = () => {
                         <Button variant="primary" className="w-100">Search</Button>
                     </Col>
                     <Col md={1} className="d-flex align-items-end">
-                    <Dropdown className="export-dropdown">
-                    <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                        Export
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={downloadPDF} className="export-option">
-                            <FaFilePdf style={{ color: 'red' }} /> Export PDF
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={downloadExcel} className="export-option">
-                            <FaFileExcel style={{ color: 'green' }} /> Export Excel
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+                        <Dropdown className="export-dropdown">
+                            <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                                Export
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={downloadPDF} className="export-option">
+                                    <FaFilePdf style={{ color: 'red' }} /> Export PDF
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={downloadExcel} className="export-option">
+                                    <FaFileExcel style={{ color: 'green' }} /> Export Excel
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </Col>
                 </Row>
             </div>
@@ -252,25 +290,9 @@ const PerformanceReports = () => {
                 </Table>
             </div>
             <div className="pagination-container">
-                <Pagination className="justify-content-center">
-                    <Pagination.Prev
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    />
-                    {pageNumbers.map(number => (
-                        <Pagination.Item
-                            key={number}
-                            active={number === currentPage}
-                            onClick={() => paginate(number)}
-                        >
-                            {number}
-                        </Pagination.Item>
-                    ))}
-                    <Pagination.Next
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    />
-                </Pagination>
+                <ul className="pagination">
+                    {renderPageNumbers()}
+                </ul>
             </div>
         </div>
     );

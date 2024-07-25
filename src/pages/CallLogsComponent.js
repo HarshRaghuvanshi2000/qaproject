@@ -16,7 +16,7 @@ const sampleAudioFiles = Array.from({ length: 80 }, (_, index) => ({
     src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index % 16 + 1}.mp3`
 }));
 
-const itemsPerPage = 13;
+const itemsPerPage = 12;
 
 const CallLogsComponent = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -97,7 +97,10 @@ const CallLogsComponent = () => {
                         </thead>
                         <tbody>
                             {paginatedData.map((file) => (
-                                <tr key={file.id}>
+                                <tr
+                                    key={file.id}
+                                    className={currentAudio === file.src ? 'playing' : ''}
+                                >
                                     <td>{file.id}</td>
                                     <td>{file.username}</td>
                                     <td>{file.eventType}</td>
