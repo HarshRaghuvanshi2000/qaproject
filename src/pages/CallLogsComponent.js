@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/CallLogsComponent.css';
 import { FaPlay, FaPause } from 'react-icons/fa';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
-
 
 const sampleAudioFiles = Array.from({ length: 80 }, (_, index) => ({
     id: index + 1,
@@ -15,14 +14,14 @@ const sampleAudioFiles = Array.from({ length: 80 }, (_, index) => ({
     reviewStatus: 'Pending',
     src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index % 16 + 1}.mp3`
 }));
-
 const itemsPerPage = 12;
-
 const CallLogsComponent = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState(sampleAudioFiles[0].src);
     const [paginatedData, setPaginatedData] = useState([]);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+    const audioPlayerRef = useRef(null);
 
     useEffect(() => {
         const indexOfLastItem = currentPage * itemsPerPage;
@@ -31,20 +30,28 @@ const CallLogsComponent = () => {
     }, [currentPage]);
 
     useEffect(() => {
-        const audioElement = document.getElementById('audioPlayer');
-        if (audioElement) {
-            audioElement.play();
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.audio.current.play();
             setIsPlaying(true);
         }
     }, [currentAudio]);
 
+    useEffect(() => {
+        const totalPages = Math.ceil(sampleAudioFiles.length / itemsPerPage);
+        const newPage = Math.floor(currentAudioIndex / itemsPerPage) + 1;
+        if (newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+        console.log(`Current Audio Index: ${currentAudioIndex}`);
+
+    }, [currentAudioIndex]);
+    
     const handlePlayPause = (src) => {
-        const audioElement = document.getElementById('audioPlayer');
         if (currentAudio === src) {
             if (isPlaying) {
-                audioElement.pause();
+                audioPlayerRef.current.audio.current.pause();
             } else {
-                audioElement.play();
+                audioPlayerRef.current.audio.current.play();
             }
             setIsPlaying(!isPlaying);
         } else {
@@ -52,6 +59,28 @@ const CallLogsComponent = () => {
             setIsPlaying(true);
         }
     };
+
+    const handlePrev = () => {
+        setCurrentAudioIndex((prevIndex) => {
+            const newIndex = (prevIndex - 1 + sampleAudioFiles.length) % sampleAudioFiles.length;
+            setCurrentAudio(sampleAudioFiles[newIndex].src);
+            setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
+            return newIndex;
+        });
+    };
+
+    const handleNext = () => {
+        setCurrentAudioIndex((prevIndex) => {
+            const newIndex = (prevIndex + 1) % sampleAudioFiles.length;
+            setCurrentAudio(sampleAudioFiles[newIndex].src);
+            setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
+            return newIndex;
+        });
+    };
+
+    // const handleAudioEnded = () => {
+    //     handleNext();
+    // };
 
     const renderPageNumbers = () => {
         const totalPages = Math.ceil(sampleAudioFiles.length / itemsPerPage);
@@ -124,11 +153,15 @@ const CallLogsComponent = () => {
                     <div className="audio-player-section">
                         <p>Audio title will come here </p>
                         <AudioPlayer
-                            id="audioPlayer"
+                            ref={audioPlayerRef}
                             src={currentAudio}
                             autoPlay
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
+                            showSkipControls
+                            onClickPrevious={handlePrev}
+                            onClickNext={handleNext}
+                            // onEnded={handleAudioEnded}
                         />
                     </div>
                     <div className="call-information">

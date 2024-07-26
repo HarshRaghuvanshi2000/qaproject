@@ -170,59 +170,59 @@ const PerformanceReports = () => {
                 />
             </div>
             <div className="filters mb-3">
-                <Row>
-                    <Col md={2}>
-                        <Form.Group controlId="reportType">
-                            <Form.Label>Select Report Type *</Form.Label>
-                            <Form.Control as="select" value={reportType} onChange={(e) => setReportType(e.target.value)}>
-                                <option value="CO performance">CO performance</option>
-                                <option value="SCO performance">SCO performance</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                        <Form.Group controlId="fromDate">
-                            <Form.Label>From *</Form.Label>
-                            <Form.Control type="date" placeholder="dd-mm-yyyy" />
-                        </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                        <Form.Group controlId="toDate">
-                            <Form.Label>To *</Form.Label>
-                            <Form.Control type="date" placeholder="dd-mm-yyyy" />
-                        </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                        <Form.Group controlId="selectShift">
-                            <Form.Label>Select Shift</Form.Label>
-                            <Form.Control as="select" defaultValue="All">
-                                <option>All</option>
-                                <option>Morning Shift: 8 AM - 2 PM</option>
-                                <option>Afternoon Shift: 2 PM - 8 PM</option>
-                                <option>Night Shift: 8 PM - 8 AM</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Col>
-                    <Col md={1} className="d-flex align-items-end">
-                        <Button variant="primary" className="w-100">Search</Button>
-                    </Col>
-                    <Col md={1} className="d-flex align-items-end">
-                        <Dropdown className="export-dropdown">
-                            <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                                Export
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item onClick={downloadPDF} className="export-option">
-                                    <FaFilePdf style={{ color: 'red' }} /> Export PDF
-                                </Dropdown.Item>
-                                <Dropdown.Item onClick={downloadExcel} className="export-option">
-                                    <FaFileExcel style={{ color: 'green' }} /> Export Excel
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Col>
-                </Row>
-            </div>
+    <Row className="align-items-end">
+      <Col md={2}>
+        <Form.Group controlId="reportType">
+          <Form.Label>Select Report Type *</Form.Label>
+          <Form.Control as="select" value={reportType} onChange={(e) => setReportType(e.target.value)}>
+            <option value="CO performance">CO performance</option>
+            <option value="SCO performance">SCO performance</option>
+          </Form.Control>
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId="fromDate">
+          <Form.Label>From *</Form.Label>
+          <Form.Control type="date" placeholder="dd-mm-yyyy" />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId="toDate">
+          <Form.Label>To *</Form.Label>
+          <Form.Control type="date" placeholder="dd-mm-yyyy" />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId="selectShift">
+          <Form.Label>Select Shift</Form.Label>
+          <Form.Control as="select" defaultValue="All">
+            <option>All</option>
+            <option>Morning Shift: 8 AM - 2 PM</option>
+            <option>Afternoon Shift: 2 PM - 8 PM</option>
+            <option>Night Shift: 8 PM - 8 AM</option>
+          </Form.Control>
+        </Form.Group>
+      </Col>
+      <Col md={1} className="d-flex align-items-end">
+        <Button variant="primary" className="w-100">Search</Button>
+      </Col>
+      <Col md={1} className="d-flex align-items-end ml-auto">
+        <Dropdown className="export-dropdown">
+          <Dropdown.Toggle variant="primary" id="dropdown-basic">
+            Export
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={downloadPDF} className="export-option">
+              <FaFilePdf style={{ color: 'red' }} /> Export PDF
+            </Dropdown.Item> 
+            <Dropdown.Item onClick={downloadExcel} className="export-option">
+              <FaFileExcel style={{ color: 'green' }} /> Export Excel
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      </Col>
+    </Row>
+  </div>
             <div className="table-responsive">
                 <Table striped bordered hover>
                     <thead>

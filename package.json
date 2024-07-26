@@ -1,7 +1,6 @@
 {
   "name": "qaproject",
   "version": "0.1.0",
-  "homepage": "https://HarshRaghuvanshi2000.github.io/qaproject/",
   "private": true,
   "dependencies": {
     "@babel/runtime": "^7.24.7",
