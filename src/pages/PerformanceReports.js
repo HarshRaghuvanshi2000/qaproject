@@ -1,58 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/PerformanceReports.css';
-import { Link } from 'react-router-dom';
 import { Table, Button, Form, Row, Col, Dropdown } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
+import { getCoQaDataByDateRange } from '../services/api'; // Import your API function
 import '../App.css';
-
-const generateSampleData = (numRows, reportType) => {
-    const data = [];
-    for (let i = 1; i <= numRows; i++) {
-        if (reportType === "CO performance") {
-            data.push({
-                name: `Name ${i}`,
-                loginID: `LoginID${i}`,
-                totalCalls: Math.floor(Math.random() * 1000),
-                totalCompletedCalls: Math.floor(Math.random() * 1000),
-                avgCallDuration: `${Math.floor(Math.random() * 60)} min`,
-                sopScore: `${Math.floor(Math.random() * 100)}%`,
-                activeListeningScore: `${Math.floor(Math.random() * 100)}%`,
-                detailsCapturingScore: `${Math.floor(Math.random() * 100)}%`,
-                addressTaggingScore: `${Math.floor(Math.random() * 100)}%`,
-                handledTime: `${Math.floor(Math.random() * 60)} min`,
-                avgScore: `${Math.floor(Math.random() * 100)}%`,
-            });
-        } else if (reportType === "SCO performance") {
-            data.push({
-                name: `Name ${i}`,
-                loginID: `LoginID${i}`,
-                qaCalls: Math.floor(Math.random() * 1000),
-                completedQA: Math.floor(Math.random() * 1000),
-                avgQACompletionTime: `${Math.floor(Math.random() * 60)} min`,
-                avgPendingQAPerDay: `${Math.floor(Math.random() * 50)} per day`,
-                detailedReport: `Report ${i}`
-            });
-        }
-    }
-    return data;
-};
 
 const PerformanceReports = () => {
     const [reportType, setReportType] = useState("CO performance");
     const [sortConfig, setSortConfig] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
-    const [data, setData] = useState(generateSampleData(30, reportType));
+    const [data, setData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [selectedReportType, setSelectedReportType] = useState("CO performance"); // New state to track dropdown selection
+   
+    const fetchData = useCallback(async () => {
+        try {
+            const fetchedData = await getCoQaDataByDateRange(startDate, endDate, selectedReportType); // Include reportType in API call if needed
+            setData(fetchedData);
+            setReportType(selectedReportType); // Update reportType only after search is clicked
+        } catch (error) {
+            console.error('Failed to fetch data:', error);
+            setData([]); // Clear data in case of error
+        }
+    }, [startDate, endDate, selectedReportType]);
+
+
 
     useEffect(() => {
-        setData(generateSampleData(100, reportType));
-    }, [reportType]);
+        const today = new Date();
+        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
 
-    const handleSearch = (e) => {
+        setStartDate(lastMonth.toISOString().split('T')[0]);
+        setEndDate(today.toISOString().split('T')[0]);
+    }, []);
+
+    useEffect(() => {
+        if (startDate && endDate) {
+            fetchData();
+        }
+    }, [startDate, endDate, fetchData]);
+    const handleSearch = () => {
+        if (startDate && endDate) {
+            fetchData();
+        } else {
+            console.error('Please fill all required fields');
+        }
+    };
+
+    const handleSearchTermChange = (e) => {
         setSearchTerm(e.target.value);
     };
 
@@ -165,127 +166,130 @@ const PerformanceReports = () => {
                     type="text"
                     placeholder="Search..."
                     value={searchTerm}
-                    onChange={handleSearch}
+                    onChange={handleSearchTermChange}
                     className="search-bar"
                 />
             </div>
             <div className="filters mb-3">
-    <Row className="align-items-end">
-      <Col md={2}>
-        <Form.Group controlId="reportType">
-          <Form.Label>Select Report Type *</Form.Label>
-          <Form.Control as="select" value={reportType} onChange={(e) => setReportType(e.target.value)}>
-            <option value="CO performance">CO performance</option>
-            <option value="SCO performance">SCO performance</option>
-          </Form.Control>
-        </Form.Group>
-      </Col>
-      <Col md={2}>
-        <Form.Group controlId="fromDate">
-          <Form.Label>From *</Form.Label>
-          <Form.Control type="date" placeholder="dd-mm-yyyy" />
-        </Form.Group>
-      </Col>
-      <Col md={2}>
-        <Form.Group controlId="toDate">
-          <Form.Label>To *</Form.Label>
-          <Form.Control type="date" placeholder="dd-mm-yyyy" />
-        </Form.Group>
-      </Col>
-      <Col md={2}>
-        <Form.Group controlId="selectShift">
-          <Form.Label>Select Shift</Form.Label>
-          <Form.Control as="select" defaultValue="All">
-            <option>All</option>
-            <option>Morning Shift: 8 AM - 2 PM</option>
-            <option>Afternoon Shift: 2 PM - 8 PM</option>
-            <option>Night Shift: 8 PM - 8 AM</option>
-          </Form.Control>
-        </Form.Group>
-      </Col>
-      <Col md={1} className="d-flex align-items-end">
-        <Button variant="primary" className="w-100">Search</Button>
-      </Col>
-      <Col md={1} className="d-flex align-items-end ml-auto">
-        <Dropdown className="export-dropdown">
-          <Dropdown.Toggle variant="primary" id="dropdown-basic">
-            Export
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={downloadPDF} className="export-option">
-              <FaFilePdf style={{ color: 'red' }} /> Export PDF
-            </Dropdown.Item> 
-            <Dropdown.Item onClick={downloadExcel} className="export-option">
-              <FaFileExcel style={{ color: 'green' }} /> Export Excel
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </Col>
-    </Row>
-  </div>
+                <Row className="align-items-end">
+                    <Col md={2}>
+                        <Form.Group controlId="reportType">
+                            <Form.Label>Select Report Type *</Form.Label>
+                            <Form.Control as="select" value={selectedReportType} onChange={(e) => setSelectedReportType(e.target.value)}>                                <option value="CO performance">CO performance</option>
+                                <option value="SCO performance">SCO performance</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                        <Form.Group controlId="fromDate">
+                            <Form.Label>From *</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                        <Form.Group controlId="toDate">
+                            <Form.Label>To *</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                        <Form.Group controlId="selectShift">
+                            <Form.Label>Select Shift</Form.Label>
+                            <Form.Control as="select" defaultValue="All">
+                                <option>All</option>
+                                <option>Morning Shift: 8 AM - 2 PM</option>
+                                <option>Afternoon Shift: 2 PM - 8 PM</option>
+                                <option>Night Shift: 8 PM - 8 AM</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col md={1} className="d-flex align-items-end">
+                        <Button variant="primary" className="w-100" onClick={handleSearch}>Search</Button>
+                    </Col>
+                    <Col md={1} className="d-flex align-items-end ml-auto">
+                        <Dropdown className="export-dropdown">
+                            <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                                Export
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={downloadPDF} className="export-option">
+                                    <FaFilePdf style={{ color: 'red' }} /> Export PDF
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={downloadExcel} className="export-option">
+                                    <FaFileExcel style={{ color: 'green' }} /> Export Excel
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </Col>
+                </Row>
+            </div>
             <div className="table-responsive">
                 <Table striped bordered hover>
                     <thead>
                         <tr>
-                            {reportType === "CO performance" ? (
-                                <>
-                                    <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name & Login ID</th>
-                                    <th onClick={() => requestSort('totalCalls')} className={getClassNamesFor('totalCalls')}>Total Calls</th>
-                                    <th onClick={() => requestSort('totalCompletedCalls')} className={getClassNamesFor('totalCompletedCalls')}>Total Completed Calls</th>
-                                    <th onClick={() => requestSort('avgCallDuration')} className={getClassNamesFor('avgCallDuration')}>Average Call Duration</th>
-                                    <th onClick={() => requestSort('sopScore')} className={getClassNamesFor('sopScore')}>SOP Score</th>
-                                    <th onClick={() => requestSort('activeListeningScore')} className={getClassNamesFor('activeListeningScore')}>Active Listening Score</th>
-                                    <th onClick={() => requestSort('detailsCapturingScore')} className={getClassNamesFor('detailsCapturingScore')}>Details Capturing Score</th>
-                                    <th onClick={() => requestSort('addressTaggingScore')} className={getClassNamesFor('addressTaggingScore')}>Address Tagging Score</th>
-                                    <th onClick={() => requestSort('handledTime')} className={getClassNamesFor('handledTime')}>Handled Time</th>
-                                    <th onClick={() => requestSort('avgScore')} className={getClassNamesFor('avgScore')}>Average Score</th>
-                                </>
-                            ) : (
-                                <>
+                        {reportType === "CO performance" && <>
                                     <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
-                                    <th onClick={() => requestSort('loginID')} className={getClassNamesFor('loginID')}>Login ID</th>
-                                    <th onClick={() => requestSort('qaCalls')} className={getClassNamesFor('qaCalls')}>QA Calls</th>
-                                    <th onClick={() => requestSort('completedQA')} className={getClassNamesFor('completedQA')}>Completed QA</th>
-                                    <th onClick={() => requestSort('avgQACompletionTime')} className={getClassNamesFor('avgQACompletionTime')}>Average QA Completion Time</th>
-                                    <th onClick={() => requestSort('avgPendingQAPerDay')} className={getClassNamesFor('avgPendingQAPerDay')}>Average Pending QA per day</th>
-                                    <th>Detailed Report</th>
-                                </>
-                            )}
+                                    <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
+                                    <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
+                                    <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
+                                    <th onClick={() => requestSort('average_call_duration')} className={getClassNamesFor('average_call_duration')}>Average Call Duration</th>
+                                    <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
+                                    <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
+                                    <th onClick={() => requestSort('details_capturing_score')} className={getClassNamesFor('details_capturing_score')}>Details Capturing Score</th>
+                                    <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Tagging Score</th>
+                                    <th onClick={() => requestSort('handled_time')} className={getClassNamesFor('handled_time')}>Handled Time</th>
+                                    <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
+                                    </>}
+                                    {reportType === "SCO performance" && <>
+                                    <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
+                                    <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
+                                    <th onClick={() => requestSort('qa_calls')} className={getClassNamesFor('qa_calls')}>QA Calls</th>
+                                    <th onClick={() => requestSort('completed_qa')} className={getClassNamesFor('completed_qa')}>Completed QA</th>
+                                    <th onClick={() => requestSort('average_qa_completion_time')} className={getClassNamesFor('average_qa_completion_time')}>Average QA Completion Time</th>
+                                    <th onClick={() => requestSort('average_pending_qa_per_day')} className={getClassNamesFor('average_pending_qa_per_day')}>Average Pending QA Per Day</th>
+                                    <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>
+                                    </>}                            
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map((item, index) => (
-                            <tr key={index}>
-                                {reportType === "CO performance" ? (
-                                    <>
-                                        <td>{item.name}</td>
-                                        <td>{item.totalCalls}</td>
-                                        <td>{item.totalCompletedCalls}</td>
-                                        <td>{item.avgCallDuration}</td>
-                                        <td>{item.sopScore}</td>
-                                        <td>{item.activeListeningScore}</td>
-                                        <td>{item.detailsCapturingScore}</td>
-                                        <td>{item.addressTaggingScore}</td>
-                                        <td>{item.handledTime}</td>
-                                        <td>{item.avgScore}</td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td>{item.name}</td>
-                                        <td>{item.loginID}</td>
-                                        <td>{item.qaCalls}</td>
-                                        <td>{item.completedQA}</td>
-                                        <td>{item.avgQACompletionTime}</td>
-                                        <td>{item.avgPendingQAPerDay}</td>
-                                        <td>
-                                            <Link to="/detailed-report">
-                                                <Button variant="link">{item.detailedReport}</Button>
-                                            </Link>
-                                        </td>
-                                    </>
-                                )}
+                        {currentItems.length > 0 ? (
+                            currentItems.map((row, index) => (
+                                <tr key={index}>
+                                      {reportType === "CO performance" && <>
+                                    <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
+                                    <td>{row.co_call_duration}</td>
+                                    <td>{row.co_call_time}</td>
+                                    <td>{row.sop_score}</td>
+                                    <td>{row.sop_score}</td>
+                                    <td>{row.active_listening_score}</td>
+                                    <td>{row.relevent_detail_score}</td>
+                                    <td>{row.address_tagging_score}</td>
+                                    <td>{row.call_type}</td>
+                                    <td>{row.call_type}</td>
+                                    </>}
+                                    {reportType === "SCO performance" && <>
+                                        <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
+                                    <td>{row.co_call_duration}</td>
+                                    <td>{row.co_call_time}</td>
+                                    <td>{row.sop_score}</td>
+                                    <td>{row.sop_score}</td>
+                                    <td>{row.active_listening_score}</td>
+                                    </>}
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="11" className="text-center">No data found</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </Table>
             </div>

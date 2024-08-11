@@ -237,3 +237,21 @@ form button[type="submit"]:hover {
 .rhap_play-status--playing .rhap_progress-bar {
     background-color: #e9ecef; /* Dark blue when playing */
 }
+/* Specific styling for <td> elements */
+.call-logs-table td {
+    max-width: 200px; /* Adjust this value as needed */
+    font-size: 14px;  /* Control the font size */
+    padding: 8px 12px; /* Adjust padding for better fit */
+    overflow: hidden; /* Hide overflowed content */
+    text-align: left; /* Align text to the left */
+    border: 1px solid #ddd; /* Maintain table borders */
+}
+
+/* Additional styling for responsiveness */
+@media (max-width: 768px) {
+    .call-logs-table td {
+        font-size: 12px; /* Reduce font size on smaller screens */
+        padding: 6px 8px; /* Adjust padding for smaller screens */
+        max-width: 100px; /* Reduce max width for smaller screens */
+    }
+}

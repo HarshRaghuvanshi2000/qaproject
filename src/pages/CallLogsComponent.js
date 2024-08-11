@@ -4,50 +4,63 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
+import { getCallData } from '../services/api'; // Import your API function
 
-const sampleAudioFiles = Array.from({ length: 80 }, (_, index) => ({
-    id: index + 1,
-    username: `User${index + 1}`,
-    eventType: 'Content',
-    eventSubtype: 'Content',
-    callDuration: '5:00',
-    reviewStatus: 'Pending',
-    src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index % 16 + 1}.mp3`
-}));
-const itemsPerPage = 12;
+const itemsPerPage = 10;
+
 const CallLogsComponent = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentAudio, setCurrentAudio] = useState(sampleAudioFiles[0].src);
+    const [currentAudio, setCurrentAudio] = useState(null);
     const [paginatedData, setPaginatedData] = useState([]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+    const [callLogs, setCallLogs] = useState([]);
+    const [currentLogDetails, setCurrentLogDetails] = useState(null);
+
     const audioPlayerRef = useRef(null);
 
     useEffect(() => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        setPaginatedData(sampleAudioFiles.slice(indexOfFirstItem, indexOfLastItem));
-    }, [currentPage]);
+        // Fetch data from the API
+        const fetchCallData = async () => {
+            try {
+                const data = await getCallData('yourCallType', 'yourFromDate', 'yourToDate');
+                setCallLogs(data);
+                setCurrentAudio(data.length > 0 ? data[0].voice_path : null);
+                paginateData(data);
+            } catch (error) {
+                console.error("Error fetching call data:", error);
+            }
+        };
+        fetchCallData();
+    }, []);
 
     useEffect(() => {
-        if (audioPlayerRef.current) {
+        paginateData(callLogs);
+    }, [currentPage, callLogs]);
+
+    useEffect(() => {
+        if (audioPlayerRef.current && currentAudio) {
             audioPlayerRef.current.audio.current.play();
             setIsPlaying(true);
         }
     }, [currentAudio]);
 
     useEffect(() => {
-        const totalPages = Math.ceil(sampleAudioFiles.length / itemsPerPage);
+        const totalPages = Math.ceil(callLogs.length / itemsPerPage);
         const newPage = Math.floor(currentAudioIndex / itemsPerPage) + 1;
         if (newPage <= totalPages) {
             setCurrentPage(newPage);
         }
-        console.log(`Current Audio Index: ${currentAudioIndex}`);
+    }, [currentAudioIndex, callLogs]);
 
-    }, [currentAudioIndex]);
-    
-    const handlePlayPause = (src) => {
-        if (currentAudio === src) {
+    const paginateData = (data) => {
+        const indexOfLastItem = currentPage * itemsPerPage;
+        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        setPaginatedData(data.slice(indexOfFirstItem, indexOfLastItem));
+    };
+
+    const handlePlayPause = (file, index) => {
+        if (currentAudio === file.voice_path) {
             if (isPlaying) {
                 audioPlayerRef.current.audio.current.pause();
             } else {
@@ -55,15 +68,18 @@ const CallLogsComponent = () => {
             }
             setIsPlaying(!isPlaying);
         } else {
-            setCurrentAudio(src);
+            setCurrentAudio(file.voice_path);
             setIsPlaying(true);
+            setCurrentAudioIndex(index);
+            setCurrentLogDetails(file); // Set the current log details here
         }
     };
+    
 
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
-            const newIndex = (prevIndex - 1 + sampleAudioFiles.length) % sampleAudioFiles.length;
-            setCurrentAudio(sampleAudioFiles[newIndex].src);
+            const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
+            setCurrentAudio(callLogs[newIndex].voice_path);
             setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
             return newIndex;
         });
@@ -71,19 +87,15 @@ const CallLogsComponent = () => {
 
     const handleNext = () => {
         setCurrentAudioIndex((prevIndex) => {
-            const newIndex = (prevIndex + 1) % sampleAudioFiles.length;
-            setCurrentAudio(sampleAudioFiles[newIndex].src);
+            const newIndex = (prevIndex + 1) % callLogs.length;
+            setCurrentAudio(callLogs[newIndex].voice_path);
             setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
             return newIndex;
         });
     };
 
-    // const handleAudioEnded = () => {
-    //     handleNext();
-    // };
-
     const renderPageNumbers = () => {
-        const totalPages = Math.ceil(sampleAudioFiles.length / itemsPerPage);
+        const totalPages = Math.ceil(callLogs.length / itemsPerPage);
         const pageNumbers = [];
         const startPage = Math.max(1, currentPage - 2);
         const endPage = Math.min(totalPages, currentPage + 2);
@@ -125,24 +137,24 @@ const CallLogsComponent = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedData.map((file) => (
+                            {paginatedData.map((file, index) => (
                                 <tr
                                     key={file.id}
-                                    className={currentAudio === file.src ? 'playing' : ''}
+                                    className={currentAudio === file.voice_path ? 'playing' : ''}
                                 >
-                                    <td>{file.id}</td>
-                                    <td>{file.username}</td>
-                                    <td>{file.eventType}</td>
-                                    <td>{file.eventSubtype}</td>
-                                    <td>{file.callDuration}</td>
-                                    <td>{file.reviewStatus}</td>
+                                    <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
+                                    <td>{file.agent_name}</td>
+                                    <td>{file.event_maintype}</td>
+                                    <td>{file.event_subtype}</td>
+                                    <td>{file.call_duration_millis}</td>
+                                    <td>{file.review_status}</td>
                                     <td>
-                                        <button onClick={() => handlePlayPause(file.src)}>
-                                            {currentAudio === file.src && isPlaying ? <FaPause /> : <FaPlay />}
+                                        <button onClick={() => handlePlayPause(file.voice_path)}>
+                                            {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                                ))}
                         </tbody>
                     </table>
                     <ul id="page-numbers">
@@ -161,31 +173,39 @@ const CallLogsComponent = () => {
                             showSkipControls
                             onClickPrevious={handlePrev}
                             onClickNext={handleNext}
-                            // onEnded={handleAudioEnded}
                         />
                     </div>
                     <div className="call-information">
                         <table>
                             <tbody>
-                                <tr>
-                                    <td>Address:</td>
-                                    <td>Panchkula</td>
-                                </tr>
-                                <tr>
-                                    <td>Event Type:</td>
-                                    <td>Accident</td>
-                                </tr>
-                                <tr>
-                                    <td>Incident Time:</td>
-                                    <td>12 PM</td>
-                                </tr>
-                                <tr>
-                                    <td>Reported By:</td>
-                                    <td>Mrunal</td>
-                                </tr>
+                                {currentLogDetails ? (
+                                    <>
+                                        <tr>
+                                            <td>Address:</td>
+                                            <td>{currentLogDetails.victim_address}</td> {/* Assuming 'address' is a property in your data */}
+                                        </tr>
+                                        <tr>
+                                            <td>Event Type:</td>
+                                            <td>{currentLogDetails.event_maintype}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Incident Time:</td>
+                                            <td>{currentLogDetails.incident_time}</td> {/* Assuming 'incident_time' is a property in your data */}
+                                        </tr>
+                                        <tr>
+                                            <td>Reported By:</td>
+                                            <td>{currentLogDetails.reported_by}</td> {/* Assuming 'reported_by' is a property in your data */}
+                                        </tr>
+                                    </>
+                                ) : (
+                                    <tr>
+                                        <td colSpan="2">Select a call log to view details</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
+
                     <form className="questionnaire">
                         <h3 className="questionnaire-title">Questionnaire</h3>
                         <div className="question">
