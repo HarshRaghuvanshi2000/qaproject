@@ -4,7 +4,7 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
-import { getCallData } from '../services/api'; // Import your API function
+import { getCallData, submitCoQaData } from '../services/api';
 
 const itemsPerPage = 10;
 
@@ -16,16 +16,23 @@ const CallLogsComponent = () => {
     const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
     const [callLogs, setCallLogs] = useState([]);
     const [currentLogDetails, setCurrentLogDetails] = useState(null);
+    const [sopScore, setSopScore] = useState('');
+    const [activeListeningScore, setActiveListeningScore] = useState('');
+    const [relevantDetailScore, setRelevantDetailScore] = useState('');
+    const [addressTaggingScore, setAddressTaggingScore] = useState('');
+    const [callHandledTimeScore, setCallHandledTimeScore] = useState('');
+    const [remarks, setRemarks] = useState('');
+    const [startTime, setStartTime] = useState(null);
 
     const audioPlayerRef = useRef(null);
 
     useEffect(() => {
-        // Fetch data from the API
         const fetchCallData = async () => {
             try {
-                const data = await getCallData('yourCallType', 'yourFromDate', 'yourToDate');
+                const data = await getCallData('1', 'yourFromDate', 'yourToDate');
                 setCallLogs(data);
-                setCurrentAudio(data.length > 0 ? data[0].voice_path : null);
+                setCurrentAudio(null); // Do not autoplay the first audio
+                setCurrentLogDetails(data.length > 0 ? data[0] : null); // Select first call log by default
                 paginateData(data);
             } catch (error) {
                 console.error("Error fetching call data:", error);
@@ -52,7 +59,19 @@ const CallLogsComponent = () => {
             setCurrentPage(newPage);
         }
     }, [currentAudioIndex, callLogs]);
-
+    
+    useEffect(() => {
+        if (currentLogDetails) {
+            // Clear form fields when currentLogDetails change
+            setSopScore('');
+            setActiveListeningScore('');
+            setRelevantDetailScore('');
+            setAddressTaggingScore('');
+            setCallHandledTimeScore('');
+            setRemarks('');
+            setStartTime(null);
+        }
+    }, [currentLogDetails]);
     const paginateData = (data) => {
         const indexOfLastItem = currentPage * itemsPerPage;
         const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -71,11 +90,9 @@ const CallLogsComponent = () => {
             setCurrentAudio(file.voice_path);
             setIsPlaying(true);
             setCurrentAudioIndex(index);
-            setCurrentLogDetails(file); // Set the current log details here
+            setCurrentLogDetails(file);
         }
     };
-    
-
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
             const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
@@ -92,6 +109,47 @@ const CallLogsComponent = () => {
             setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
             return newIndex;
         });
+    }; // 
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!currentLogDetails) {
+            alert("Please select a call log to submit.");
+            return;
+        }
+
+        const scoQaTime = calculateScoQaTime();
+
+        const data = {
+            signalId: currentLogDetails.id,
+            scoQaTime,
+            sopScore,
+            activeListeningScore,
+            relevantDetailScore,
+            addressTaggingScore,
+            callHandledTimeScore,
+            scoEmployeeCode: "SCO1",
+            scoRemarks: remarks,
+        };
+
+        try {
+            const response = await submitCoQaData(data);
+            console.log('Submission successful:', response);
+            // Clear form fields after successful submission
+            setSopScore('');
+            setActiveListeningScore('');
+            setRelevantDetailScore('');
+            setAddressTaggingScore('');
+            setCallHandledTimeScore('');
+            setRemarks('');
+        } catch (error) {
+            console.error('Submission failed:', error);
+        }
+    };
+
+    const calculateScoQaTime = () => {
+        const endTime = new Date();
+        return Math.floor((endTime - startTime) / 1000).toString(); // Calculate time in seconds
     };
 
     const renderPageNumbers = () => {
@@ -128,7 +186,6 @@ const CallLogsComponent = () => {
                         <thead>
                             <tr>
                                 <th onClick={() => console.log("Sort Sr. No")}>Sr. No</th>
-                                <th onClick={() => console.log("Sort Username")}>Username</th>
                                 <th onClick={() => console.log("Sort Event Type")}>Event Type</th>
                                 <th onClick={() => console.log("Sort Event Subtype")}>Event Subtype</th>
                                 <th onClick={() => console.log("Sort Call Duration")}>Call Duration</th>
@@ -143,18 +200,17 @@ const CallLogsComponent = () => {
                                     className={currentAudio === file.voice_path ? 'playing' : ''}
                                 >
                                     <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                                    <td>{file.agent_name}</td>
                                     <td>{file.event_maintype}</td>
                                     <td>{file.event_subtype}</td>
                                     <td>{file.call_duration_millis}</td>
                                     <td>{file.review_status}</td>
                                     <td>
-                                        <button onClick={() => handlePlayPause(file.voice_path)}>
+                                        <button onClick={() => handlePlayPause(file, index)}>
                                             {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
                                         </button>
                                     </td>
                                 </tr>
-                                ))}
+                            ))}
                         </tbody>
                     </table>
                     <ul id="page-numbers">
@@ -163,16 +219,16 @@ const CallLogsComponent = () => {
                 </div>
                 <div className="content-side">
                     <div className="audio-player-section">
-                        <p>Audio title will come here </p>
+                        <p>Audio title will come here</p>
                         <AudioPlayer
                             ref={audioPlayerRef}
                             src={currentAudio}
-                            autoPlay
-                            onPlay={() => setIsPlaying(true)}
-                            onPause={() => setIsPlaying(false)}
                             showSkipControls
                             onClickPrevious={handlePrev}
                             onClickNext={handleNext}
+                            onPause={() => setIsPlaying(false)}
+                            autoPlay={false}
+                            onPlay={() => setStartTime(new Date())}
                         />
                     </div>
                     <div className="call-information">
@@ -182,7 +238,7 @@ const CallLogsComponent = () => {
                                     <>
                                         <tr>
                                             <td>Address:</td>
-                                            <td>{currentLogDetails.victim_address}</td> {/* Assuming 'address' is a property in your data */}
+                                            <td>{currentLogDetails.victim_address}</td>
                                         </tr>
                                         <tr>
                                             <td>Event Type:</td>
@@ -190,11 +246,11 @@ const CallLogsComponent = () => {
                                         </tr>
                                         <tr>
                                             <td>Incident Time:</td>
-                                            <td>{currentLogDetails.incident_time}</td> {/* Assuming 'incident_time' is a property in your data */}
+                                            <td>{currentLogDetails.incident_time}</td>
                                         </tr>
                                         <tr>
                                             <td>Reported By:</td>
-                                            <td>{currentLogDetails.reported_by}</td> {/* Assuming 'reported_by' is a property in your data */}
+                                            <td>{currentLogDetails.reported_by}</td>
                                         </tr>
                                     </>
                                 ) : (
@@ -206,54 +262,54 @@ const CallLogsComponent = () => {
                         </table>
                     </div>
 
-                    <form className="questionnaire">
+                    <form className="questionnaire" onSubmit={handleSubmit}>
                         <h3 className="questionnaire-title">Questionnaire</h3>
                         <div className="question">
                             <label>1. Compliance of SOP</label>
                             <div className="options">
-                                <label><input type="radio" name="q1" value="Poor" /> Poor</label>
-                                <label><input type="radio" name="q1" value="Good" /> Good</label>
-                                <label><input type="radio" name="q1" value="Excellent" /> Excellent</label>
+                                <label><input type="radio" name="q1" value="1" checked={sopScore === '1'} onChange={(e) => setSopScore(e.target.value)} /> Yes</label>
+                                <label><input type="radio" name="q1" value="2" checked={sopScore === '2'} onChange={(e) => setSopScore(e.target.value)} /> No</label>
+                                <label><input type="radio" name="q1" value="3" checked={sopScore === '3'} onChange={(e) => setSopScore(e.target.value)} /> NA</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>2. Active listening & proper response</label>
                             <div className="options">
-                                <label><input type="radio" name="q2" value="Poor" /> Poor</label>
-                                <label><input type="radio" name="q2" value="Good" /> Good</label>
-                                <label><input type="radio" name="q2" value="Excellent" /> Excellent</label>
+                                <label><input type="radio" name="q2" value="1" checked={activeListeningScore === '1'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Yes</label>
+                                <label><input type="radio" name="q2" value="2" checked={activeListeningScore === '2'} onChange={(e) => setActiveListeningScore(e.target.value)} /> No</label>
+                                <label><input type="radio" name="q2" value="3" checked={activeListeningScore === '3'} onChange={(e) => setActiveListeningScore(e.target.value)} /> NA</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>3. Correct and relevant details capturing</label>
                             <div className="options">
-                                <label><input type="radio" name="q3" value="Poor" /> Poor</label>
-                                <label><input type="radio" name="q3" value="Good" /> Good</label>
-                                <label><input type="radio" name="q3" value="Excellent" /> Excellent</label>
+                                <label><input type="radio" name="q3" value="1" checked={relevantDetailScore === '1'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> Yes</label>
+                                <label><input type="radio" name="q3" value="2" checked={relevantDetailScore === '2'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> No</label>
+                                <label><input type="radio" name="q3" value="3" checked={relevantDetailScore === '3'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> NA</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>4. Correct address tagging</label>
                             <div className="options">
-                                <label><input type="radio" name="q4" value="Poor" /> Poor</label>
-                                <label><input type="radio" name="q4" value="Good" /> Good</label>
-                                <label><input type="radio" name="q4" value="Excellent" /> Excellent</label>
+                                <label><input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Yes</label>
+                                <label><input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> No</label>
+                                <label><input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> NA</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>5. Call handled time</label>
                             <div className="options">
-                                <label><input type="radio" name="q5" value="Poor" /> Poor</label>
-                                <label><input type="radio" name="q5" value="Good" /> Good</label>
-                                <label><input type="radio" name="q5" value="Excellent" /> Excellent</label>
+                                <label><input type="radio" name="q5" value="1" checked={callHandledTimeScore === '1'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Yes</label>
+                                <label><input type="radio" name="q5" value="2" checked={callHandledTimeScore === '2'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> No</label>
+                                <label><input type="radio" name="q5" value="3" checked={callHandledTimeScore === '3'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> NA</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>Remarks (Optional)</label>
-                            <textarea rows="4"></textarea>
+                            <textarea rows="4" value={remarks} onChange={(e) => setRemarks(e.target.value)} ></textarea>
                         </div>
                         <div className="submit-container">
-                            <button type="submit">Submit</button>
+                        <button type="submit">Submit</button>
                         </div>
                     </form>
                 </div>

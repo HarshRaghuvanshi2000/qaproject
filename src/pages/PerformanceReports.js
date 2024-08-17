@@ -12,7 +12,7 @@ const PerformanceReports = () => {
     const [reportType, setReportType] = useState("CO performance");
     const [sortConfig, setSortConfig] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [data, setData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -95,13 +95,13 @@ const PerformanceReports = () => {
         return sortConfig.key === name ? sortConfig.direction : undefined;
     };
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const indexOfLastItem = itemsPerPage === data.length ? data.length : currentPage * itemsPerPage;
+    const indexOfFirstItem = itemsPerPage === data.length ? 0 : indexOfLastItem - itemsPerPage;
     const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+    const totalPages = itemsPerPage === data.length ? 1 : Math.ceil(sortedData.length / itemsPerPage);
     const pageNumbers = [];
     const maxPageNumbersToShow = 5;
 
@@ -175,7 +175,8 @@ const PerformanceReports = () => {
                     <Col md={2}>
                         <Form.Group controlId="reportType">
                             <Form.Label>Select Report Type *</Form.Label>
-                            <Form.Control as="select" value={selectedReportType} onChange={(e) => setSelectedReportType(e.target.value)}>                                <option value="CO performance">CO performance</option>
+                            <Form.Control as="select" value={selectedReportType} onChange={(e) => setSelectedReportType(e.target.value)}>                                
+                                <option value="CO performance">CO performance</option>
                                 <option value="SCO performance">SCO performance</option>
                             </Form.Control>
                         </Form.Group>
@@ -211,6 +212,21 @@ const PerformanceReports = () => {
                             </Form.Control>
                         </Form.Group>
                     </Col>
+                    <Col md={2}>
+                        <Form.Group controlId="itemsPerPage">
+                            <Form.Label>Items Per Page</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(e.target.value === "All" ? data.length : parseInt(e.target.value))}
+                            >   <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value="All">ALL</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
                     <Col md={1} className="d-flex align-items-end">
                         <Button variant="primary" className="w-100" onClick={handleSearch}>Search</Button>
                     </Col>
@@ -233,10 +249,10 @@ const PerformanceReports = () => {
             </div>
             <div className="table-responsive">
                 <Table striped bordered hover>
-                    <thead>
-                        <tr>
+                <thead>
+                    <tr>
                         {reportType === "CO performance" && <>
-                                    <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
+                                <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
                                     <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
                                     <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
                                     <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
@@ -249,7 +265,7 @@ const PerformanceReports = () => {
                                     <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
                                     </>}
                                     {reportType === "SCO performance" && <>
-                                    <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
+                                <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
                                     <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
                                     <th onClick={() => requestSort('qa_calls')} className={getClassNamesFor('qa_calls')}>QA Calls</th>
                                     <th onClick={() => requestSort('completed_qa')} className={getClassNamesFor('completed_qa')}>Completed QA</th>
@@ -257,12 +273,12 @@ const PerformanceReports = () => {
                                     <th onClick={() => requestSort('average_pending_qa_per_day')} className={getClassNamesFor('average_pending_qa_per_day')}>Average Pending QA Per Day</th>
                                     <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>
                                     </>}                            
-                        </tr>
-                    </thead>
-                    <tbody>
+                    </tr>
+                </thead>
+                <tbody>
                         {currentItems.length > 0 ? (
                             currentItems.map((row, index) => (
-                                <tr key={index}>
+                        <tr key={index}>
                                       {reportType === "CO performance" && <>
                                     <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
                                     <td>{row.co_call_duration}</td>
@@ -283,15 +299,15 @@ const PerformanceReports = () => {
                                     <td>{row.sop_score}</td>
                                     <td>{row.active_listening_score}</td>
                                     </>}
-                                </tr>
+                        </tr>
                             ))
                         ) : (
                             <tr>
                                 <td colSpan="11" className="text-center">No data found</td>
                             </tr>
                         )}
-                    </tbody>
-                </Table>
+                </tbody>
+            </Table>
             </div>
             <div className="pagination-container">
                 <ul className="pagination">

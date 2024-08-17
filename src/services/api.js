@@ -50,8 +50,8 @@ export const getCoQaDataByDateRange = async (startDate, endDate,reportType) => {
     }
 };
 
-export const getCallData = async (callType) => {
-    const url = `http://localhost:3000/api/users/call-data?callType=${callType}`;
+export const getCallData = async (signalType, fromDate,toDate) => {
+    const url = `http://localhost:3000/api/users/call-data?signalType=${signalType}`;
 
     try {
         const response = await fetch(url, {
@@ -73,3 +73,20 @@ export const getCallData = async (callType) => {
         throw error;
     }
 };
+// Inside services/api.js
+export const submitCoQaData = async (data) => {
+    const response = await fetch('http://localhost:3000/api/users/create-coqa-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    return response.json();
+};
+
