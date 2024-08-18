@@ -281,15 +281,15 @@ const PerformanceReports = () => {
                         <tr key={index}>
                                       {reportType === "CO performance" && <>
                                     <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
-                                    <td>{row.co_call_duration}</td>
-                                    <td>{row.co_call_time}</td>
+                                    <td>{row.total_calls}</td>
+                                    <td>{row.total_completed_calls}</td>
                                     <td>{row.sop_score}</td>
                                     <td>{row.sop_score}</td>
                                     <td>{row.active_listening_score}</td>
                                     <td>{row.relevent_detail_score}</td>
                                     <td>{row.address_tagging_score}</td>
-                                    <td>{row.call_type}</td>
-                                    <td>{row.call_type}</td>
+                                    <td>{row.call_handled_time_score}</td>
+                                    <td>{row.average_score}</td>
                                     </>}
                                     {reportType === "SCO performance" && <>
                                         <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>

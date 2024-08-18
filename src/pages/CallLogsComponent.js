@@ -5,10 +5,15 @@ import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
 import { getCallData, submitCoQaData } from '../services/api';
+import SuccessPopup from '../components/SuccessPopup';
+import '../styles/SuccessPopup.css';
+
+
 
 const itemsPerPage = 10;
 
 const CallLogsComponent = () => {
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState(null);
     const [paginatedData, setPaginatedData] = useState([]);
@@ -111,8 +116,18 @@ const CallLogsComponent = () => {
             return newIndex;
         });
     }; // 
+    const handleClosePopup = () => {
+        setIsPopupOpen(false);
+        // Optionally, refresh or reset the page here
+      };
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        // Check if all required fields are selected
+        if (!sopScore || !activeListeningScore || !releventDetailScore || !addressTaggingScore || !callHandledTimeScore) {
+            alert("Please select all fields before submitting.");
+            return;
+        }
 
         if (!currentLogDetails) {
             alert("Please select a call log to submit.");
@@ -136,6 +151,10 @@ const CallLogsComponent = () => {
         try {
             const response = await submitCoQaData(data);
             console.log('Submission successful:', response);
+
+            // Show success popup
+            setIsPopupOpen(true);
+
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
@@ -143,10 +162,16 @@ const CallLogsComponent = () => {
             setAddressTaggingScore('');
             setCallHandledTimeScore('');
             setRemarks('');
+
+            // Smoothly refresh the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 500); // Adjust the delay if necessary
         } catch (error) {
             console.error('Submission failed:', error);
         }
     };
+    
 
     const calculateScoQaTime = () => {
         const endTime = new Date();
@@ -314,6 +339,11 @@ const CallLogsComponent = () => {
                             <button type="submit">Submit</button>
                         </div>
                     </form>
+                    <SuccessPopup
+                        message="Your settings have been saved"
+                        isOpen={isPopupOpen}
+                        onClose={handleClosePopup}
+                    />
                 </div>
             </div>
         </div>
