@@ -18,7 +18,7 @@ const CallLogsComponent = () => {
     const [currentLogDetails, setCurrentLogDetails] = useState(null);
     const [sopScore, setSopScore] = useState('');
     const [activeListeningScore, setActiveListeningScore] = useState('');
-    const [relevantDetailScore, setRelevantDetailScore] = useState('');
+    const [releventDetailScore, setReleventDetailScore] = useState('');
     const [addressTaggingScore, setAddressTaggingScore] = useState('');
     const [callHandledTimeScore, setCallHandledTimeScore] = useState('');
     const [remarks, setRemarks] = useState('');
@@ -59,13 +59,13 @@ const CallLogsComponent = () => {
             setCurrentPage(newPage);
         }
     }, [currentAudioIndex, callLogs]);
-    
+
     useEffect(() => {
         if (currentLogDetails) {
             // Clear form fields when currentLogDetails change
             setSopScore('');
             setActiveListeningScore('');
-            setRelevantDetailScore('');
+            setReleventDetailScore('');
             setAddressTaggingScore('');
             setCallHandledTimeScore('');
             setRemarks('');
@@ -90,9 +90,10 @@ const CallLogsComponent = () => {
             setCurrentAudio(file.voice_path);
             setIsPlaying(true);
             setCurrentAudioIndex(index);
-            setCurrentLogDetails(file);
+            setCurrentLogDetails(file); // Ensure this line updates the details correctly
         }
     };
+
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
             const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
@@ -121,11 +122,11 @@ const CallLogsComponent = () => {
         const scoQaTime = calculateScoQaTime();
 
         const data = {
-            signalId: currentLogDetails.id,
+            signalId: currentLogDetails.signal_id,
             scoQaTime,
             sopScore,
             activeListeningScore,
-            relevantDetailScore,
+            releventDetailScore,
             addressTaggingScore,
             callHandledTimeScore,
             scoEmployeeCode: "SCO1",
@@ -138,7 +139,7 @@ const CallLogsComponent = () => {
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
-            setRelevantDetailScore('');
+            setReleventDetailScore('');
             setAddressTaggingScore('');
             setCallHandledTimeScore('');
             setRemarks('');
@@ -262,46 +263,47 @@ const CallLogsComponent = () => {
                         </table>
                     </div>
 
+
                     <form className="questionnaire" onSubmit={handleSubmit}>
                         <h3 className="questionnaire-title">Questionnaire</h3>
                         <div className="question">
                             <label>1. Compliance of SOP</label>
                             <div className="options">
-                                <label><input type="radio" name="q1" value="1" checked={sopScore === '1'} onChange={(e) => setSopScore(e.target.value)} /> Yes</label>
-                                <label><input type="radio" name="q1" value="2" checked={sopScore === '2'} onChange={(e) => setSopScore(e.target.value)} /> No</label>
-                                <label><input type="radio" name="q1" value="3" checked={sopScore === '3'} onChange={(e) => setSopScore(e.target.value)} /> NA</label>
+                                <label><input type="radio" name="q1" value="1" checked={sopScore === '1'} onChange={(e) => setSopScore(e.target.value)} /> Poor</label>
+                                <label><input type="radio" name="q1" value="2" checked={sopScore === '2'} onChange={(e) => setSopScore(e.target.value)} /> Good</label>
+                                <label><input type="radio" name="q1" value="3" checked={sopScore === '3'} onChange={(e) => setSopScore(e.target.value)} /> Excellent</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>2. Active listening & proper response</label>
                             <div className="options">
-                                <label><input type="radio" name="q2" value="1" checked={activeListeningScore === '1'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Yes</label>
-                                <label><input type="radio" name="q2" value="2" checked={activeListeningScore === '2'} onChange={(e) => setActiveListeningScore(e.target.value)} /> No</label>
-                                <label><input type="radio" name="q2" value="3" checked={activeListeningScore === '3'} onChange={(e) => setActiveListeningScore(e.target.value)} /> NA</label>
+                                <label><input type="radio" name="q2" value="1" checked={activeListeningScore === '1'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Poor</label>
+                                <label><input type="radio" name="q2" value="2" checked={activeListeningScore === '2'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Good</label>
+                                <label><input type="radio" name="q2" value="3" checked={activeListeningScore === '3'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Excellent</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>3. Correct and relevant details capturing</label>
                             <div className="options">
-                                <label><input type="radio" name="q3" value="1" checked={relevantDetailScore === '1'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> Yes</label>
-                                <label><input type="radio" name="q3" value="2" checked={relevantDetailScore === '2'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> No</label>
-                                <label><input type="radio" name="q3" value="3" checked={relevantDetailScore === '3'} onChange={(e) => setRelevantDetailScore(e.target.value)} /> NA</label>
+                                <label><input type="radio" name="q3" value="1" checked={releventDetailScore === '1'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Poor</label>
+                                <label><input type="radio" name="q3" value="2" checked={releventDetailScore === '2'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Good</label>
+                                <label><input type="radio" name="q3" value="3" checked={releventDetailScore === '3'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Excellent</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>4. Correct address tagging</label>
                             <div className="options">
-                                <label><input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Yes</label>
-                                <label><input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> No</label>
-                                <label><input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> NA</label>
+                                <label><input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Poor</label>
+                                <label><input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Good</label>
+                                <label><input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Excellent</label>
                             </div>
                         </div>
                         <div className="question">
                             <label>5. Call handled time</label>
                             <div className="options">
-                                <label><input type="radio" name="q5" value="1" checked={callHandledTimeScore === '1'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Yes</label>
-                                <label><input type="radio" name="q5" value="2" checked={callHandledTimeScore === '2'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> No</label>
-                                <label><input type="radio" name="q5" value="3" checked={callHandledTimeScore === '3'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> NA</label>
+                                <label><input type="radio" name="q5" value="1" checked={callHandledTimeScore === '1'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Poor</label>
+                                <label><input type="radio" name="q5" value="2" checked={callHandledTimeScore === '2'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Good</label>
+                                <label><input type="radio" name="q5" value="3" checked={callHandledTimeScore === '3'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Excellent</label>
                             </div>
                         </div>
                         <div className="question">
@@ -309,7 +311,7 @@ const CallLogsComponent = () => {
                             <textarea rows="4" value={remarks} onChange={(e) => setRemarks(e.target.value)} ></textarea>
                         </div>
                         <div className="submit-container">
-                        <button type="submit">Submit</button>
+                            <button type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
