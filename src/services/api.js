@@ -89,4 +89,27 @@ export const submitCoQaData = async (data) => {
 
     return response.json();
 };
+export const getCallSummary = async () => {
+    const url = `http://localhost:3000/api/users/call-summary`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log(response);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch co-qa data');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API error:', error);
+        throw error;
+    }
+};
 
