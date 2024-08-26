@@ -16,6 +16,7 @@ const Dashboard = () => {
                     total: call.totalCalls,
                     qa: call.completedCalls,
                     pending: call.pendingCalls,
+                    typeId:call.signalTypeId,
                     icon: getIconForType(call.signalType), // You can map icons based on the signalType
                     color: getColorForType(call.signalType), // You can map colors based on the signalType
                 }));
@@ -37,7 +38,7 @@ const Dashboard = () => {
             case 'Non Voice Signal': return 'fas fa-wave-square';
             case 'No Response Calls': return 'fas fa-phone-slash';
             case 'Trip Monitoring Calls': return 'fas fa-road';
-            case 'Feedback calls': return 'fas fa-comments';
+            case 'Feedback Calls': return 'fas fa-comments';
             default: return 'fas fa-phone-alt';
         }
     };
@@ -82,7 +83,7 @@ const Dashboard = () => {
                             <div className="call-log-detail">
                                 <strong>Call List</strong>
                                 <span>
-                                    <Link to="/call-logs" className="call-list-link">Table List</Link>
+                                    <Link to={`/call-logs?signalTypeId=${call.typeId}`} className="call-list-link">Table List</Link>
                                 </span>
                             </div>
                         </div>

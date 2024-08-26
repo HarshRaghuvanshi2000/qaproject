@@ -256,7 +256,7 @@ const PerformanceReports = () => {
                                     <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
                                     <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
                                     <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
-                                    <th onClick={() => requestSort('average_call_duration')} className={getClassNamesFor('average_call_duration')}>Average Call Duration</th>
+                                    <th onClick={() => requestSort('average_call_duration')} className={getClassNamesFor('average_call_duration')}>Average Call Duration (In Seconds)</th>
                                     <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
                                     <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
                                     <th onClick={() => requestSort('details_capturing_score')} className={getClassNamesFor('details_capturing_score')}>Details Capturing Score</th>
@@ -283,7 +283,7 @@ const PerformanceReports = () => {
                                     <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
                                     <td>{row.total_calls}</td>
                                     <td>{row.total_completed_calls}</td>
-                                    <td>{row.sop_score}</td>
+                                    <td>{row.average_call_duration_millis/1000}</td>
                                     <td>{row.sop_score}</td>
                                     <td>{row.active_listening_score}</td>
                                     <td>{row.relevent_detail_score}</td>

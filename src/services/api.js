@@ -50,9 +50,9 @@ export const getCoQaDataByDateRange = async (startDate, endDate,reportType) => {
     }
 };
 
-export const getCallData = async (signalType, fromDate,toDate) => {
-    const url = `http://localhost:3000/api/users/call-data?signalType=${signalType}`;
-
+export const getCallData = async (signalTypeId, fromDate,toDate) => {
+    const url = `http://localhost:3000/api/users/call-data?signalType=${signalTypeId}`;
+console.log(url);
     try {
         const response = await fetch(url, {
             method: 'GET',

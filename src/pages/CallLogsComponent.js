@@ -7,12 +7,18 @@ import '../App.css';
 import { getCallData, submitCoQaData } from '../services/api';
 import SuccessPopup from '../components/SuccessPopup';
 import '../styles/SuccessPopup.css';
+import { useLocation } from 'react-router-dom';
+import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
 
 
 
-const itemsPerPage = 10;
+
+const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const signalTypeId = queryParams.get('signalTypeId');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState(null);
@@ -28,23 +34,32 @@ const CallLogsComponent = () => {
     const [callHandledTimeScore, setCallHandledTimeScore] = useState('');
     const [remarks, setRemarks] = useState('');
     const [startTime, setStartTime] = useState(null);
+    const [infoPopupOpen, setInfoPopupOpen] = useState(false);
+    const [infoPopupContent, setInfoPopupContent] = useState(null);
+    const [popupPosition, setPopupPosition] = useState({ top: '50%', left: '50%' });
+    const [dragging, setDragging] = useState(false);
+    const [offset, setOffset] = useState({ x: 0, y: 0 });
+    const infoPopupRef = useRef(null);
+
 
     const audioPlayerRef = useRef(null);
-
-    useEffect(() => {
-        const fetchCallData = async () => {
-            try {
-                const data = await getCallData('1', 'yourFromDate', 'yourToDate');
-                setCallLogs(data);
-                setCurrentAudio(null); // Do not autoplay the first audio
-                setCurrentLogDetails(data.length > 0 ? data[0] : null); // Select first call log by default
-                paginateData(data);
-            } catch (error) {
-                console.error("Error fetching call data:", error);
+    
+        useEffect(() => {
+            const fetchCallData = async () => {
+                try {
+                    const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
+                    setCallLogs(data);
+                    setCurrentAudio(null); // Do not autoplay the first audio
+                    setCurrentLogDetails(data.length > 0 ? data[0] : null); // Select first call log by default
+                    paginateData(data);
+                } catch (error) {
+                    console.error("Error fetching call data:", error);
+                }
+            };
+            if (signalTypeId) {
+                fetchCallData();
             }
-        };
-        fetchCallData();
-    }, []);
+        }, [signalTypeId]);
 
     useEffect(() => {
         paginateData(callLogs);
@@ -202,7 +217,42 @@ const CallLogsComponent = () => {
 
         return pageNumbers;
     };
+    const handlePopupDragStart = (e) => {
+        if (infoPopupRef.current) {
+            const rect = infoPopupRef.current.getBoundingClientRect();
+            setOffset({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            });
+            setDragging(true);
+        }
+    };
+    
+    const handlePopupDrag = (e) => {
+        if (dragging) {
+            setPopupPosition({
+                top: e.clientY - offset.y,
+                left: e.clientX - offset.x,
+            });
+        }
+    };
+    
+    const handlePopupDragEnd = () => {
+        setDragging(false);
+    };
+    const handleInfoClick = (file) => {
+        console.log("Info button clicked for file:", file);
+        setInfoPopupContent(file);
+        setInfoPopupOpen(true);
 
+    };
+
+    // Inside InfoPopup component
+    
+    const handleInfoPopupClose = () => {
+        setInfoPopupOpen(false);
+    };
+        
     return (
         <div className="main-content">
             <h1 className="call-logs-title">Actionable Call Logs</h1>
@@ -214,9 +264,10 @@ const CallLogsComponent = () => {
                                 <th onClick={() => console.log("Sort Sr. No")}>Sr. No</th>
                                 <th onClick={() => console.log("Sort Event Type")}>Event Type</th>
                                 <th onClick={() => console.log("Sort Event Subtype")}>Event Subtype</th>
-                                <th onClick={() => console.log("Sort Call Duration")}>Call Duration</th>
+                                <th onClick={() => console.log("Sort Call Duration")}>Call Duration (In sec)</th>
                                 <th onClick={() => console.log("Sort Review Status")}>Review Status</th>
                                 <th>Play</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -228,12 +279,15 @@ const CallLogsComponent = () => {
                                     <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                                     <td>{file.event_maintype}</td>
                                     <td>{file.event_subtype}</td>
-                                    <td>{file.call_duration_millis}</td>
+                                    <td>{file.call_duration_millis/5000}</td>
                                     <td>{file.review_status}</td>
                                     <td>
                                         <button onClick={() => handlePlayPause(file, index)}>
                                             {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
                                         </button>
+                                    </td>
+                                    <td>
+                                    <button onClick={() => handleInfoClick(file)}>Info</button>
                                     </td>
                                 </tr>
                             ))}
@@ -263,20 +317,20 @@ const CallLogsComponent = () => {
                                 {currentLogDetails ? (
                                     <>
                                         <tr>
-                                            <td>Address:</td>
-                                            <td>{currentLogDetails.victim_address}</td>
-                                        </tr>
-                                        <tr>
                                             <td>Event Type:</td>
                                             <td>{currentLogDetails.event_maintype}</td>
                                         </tr>
                                         <tr>
-                                            <td>Incident Time:</td>
-                                            <td>{currentLogDetails.incident_time}</td>
+                                            <td>Event Subtype</td>
+                                            <td>{currentLogDetails.event_subtype}</td>
                                         </tr>
                                         <tr>
-                                            <td>Reported By:</td>
-                                            <td>{currentLogDetails.reported_by}</td>
+                                            <td>Call Duration (In sec)</td>
+                                            <td>{currentLogDetails.call_duration_millis/5000}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Review Status</td>
+                                            <td>{currentLogDetails.review_status}</td>
                                         </tr>
                                     </>
                                 ) : (
@@ -343,6 +397,16 @@ const CallLogsComponent = () => {
                         message="Your settings have been saved"
                         isOpen={isPopupOpen}
                         onClose={handleClosePopup}
+                    />
+                    <InfoPopup
+                        isOpen={infoPopupOpen}
+                        onClose={handleInfoPopupClose}
+                        logDetails={infoPopupContent}
+                        position={popupPosition}
+                        onDragStart={handlePopupDragStart}
+                        onDrag={handlePopupDrag}
+                        onDragEnd={handlePopupDragEnd}
+                        ref={infoPopupRef}
                     />
                 </div>
             </div>
