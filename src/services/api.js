@@ -113,3 +113,55 @@ export const getCallSummary = async () => {
     }
 };
 
+// api.js
+
+export const getSignalTypes = async () => {
+    const url = 'http://localhost:3000/api/users/signal-types';
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch signal types');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API error:', error);
+        throw error;
+    }
+};
+
+export const updateSignalType = async (signalTypeId, percentageOfCallsQa, maximumLimit) => {
+    const url = 'http://localhost:3000/api/users/signal-types';
+
+    const body = JSON.stringify({
+        signal_type_id: signalTypeId,
+        percentage_of_calls_qa: percentageOfCallsQa,
+        maximum_limit: maximumLimit,
+    });
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body,
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update signal type');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API error:', error);
+        throw error;
+    }
+};
