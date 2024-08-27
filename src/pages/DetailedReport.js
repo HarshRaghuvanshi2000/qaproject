@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import '../styles/DetailedReport.css';
 import '../App.css';
 import { Pagination, Dropdown } from 'react-bootstrap';
@@ -11,31 +12,38 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-const generateSampleData = (numRows) => {
-    const data = [];
-    for (let i = 1; i <= numRows; i++) {
-        data.push({
-            srNo: i,
-            eventType: `Event Type ${i}`,
-            eventSubtype: `Subtype ${i}`,
-            callDuration: `${Math.floor(Math.random() * 60)} min`,
-            reviewStatus: 'Pending',
-            callType: `Type ${i}`,
-            sopScore: `${Math.floor(Math.random() * 100)}%`,
-            listeningScore: `${Math.floor(Math.random() * 100)}%`,
-            detailsCapturingScore: `${Math.floor(Math.random() * 100)}%`,
-            addressTaggingScore: `${Math.floor(Math.random() * 100)}%`,
-            handledTime: `${Math.floor(Math.random() * 60)} min`,
-        });
-    }
-    return data;
-};
-
 const DetailedReport = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(12);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-    const [data, setData] = useState(generateSampleData(100));
+    const [data, setData] = useState([]);
+
+    const location = useLocation();
+
+    const getQueryParams = () => {
+        const searchParams = new URLSearchParams(location.search);
+        return {
+            scoEmployeeCode: searchParams.get('scoEmployeeCode'),
+            startDate: searchParams.get('startDate'),
+            endDate: searchParams.get('endDate'),
+        };
+    };
+
+    useEffect(() => {
+        const { scoEmployeeCode, startDate, endDate } = getQueryParams();
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/sco-detailed-data?scoEmployeeCode=${scoEmployeeCode}&startDate=${startDate}&endDate=${endDate}`);
+                const result = await response.json();
+                setData(result);
+            } catch (error) {
+                console.error('Failed to fetch detailed report data:', error);
+            }
+        };
+
+        fetchData();
+    }, [location.search]);
 
     const requestSort = (key) => {
         let direction = 'ascending';
@@ -81,25 +89,24 @@ const DetailedReport = () => {
     const handleExportPDF = () => {
         const doc = new jsPDF();
         doc.setFontSize(16);
-        doc.text('SCO3251 - Detailed Report', 14, 22);
+        doc.text('SCO Detailed Report', 14, 22);
         doc.setFontSize(12);
-        doc.text('Date : 01-01-2024 To 01-02-2024', 14, 30);
+        doc.text(`Date: ${getQueryParams().startDate} To ${getQueryParams().endDate}`, 14, 30);
 
         autoTable(doc, {
             startY: 40,
-            head: [['Sr. No', 'Event Type', 'Event Subtype', 'Call Duration', 'Review Status', 'Call Type', 'SOP QA Score', 'Listening QA Score', 'Capturing QA Score', 'Address QA Score', 'Handled Time']],
+            head: [['SCO Employee Code', 'CO Name', 'CO Employee Code', 'SOP Score', 'Active Listening Score', 'Relevant Detail Score', 'Address Tagging Score', 'Call Handled Time Score', 'SCO QA Time', 'SCO Remarks']],
             body: data.map(item => [
-                item.srNo,
-                item.eventType,
-                item.eventSubtype,
-                item.callDuration,
-                item.reviewStatus,
-                item.callType,
-                item.sopScore,
-                item.listeningScore,
-                item.detailsCapturingScore,
-                item.addressTaggingScore,
-                item.handledTime
+                item.sco_employee_code,
+                item.co_name,
+                item.co_employee_code,
+                item.sop_score,
+                item.active_listening_score,
+                item.relevent_detail_score,
+                item.address_tagging_score,
+                item.call_handled_time_score,
+                item.sco_qa_time,
+                item.sco_remarks
             ])
         });
 
@@ -110,22 +117,14 @@ const DetailedReport = () => {
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Detailed Report');
-
-        const header = [
-            ['SCO3251 - Detailed Report'],
-            ['Date Range: 01-01-2024 To 01-02-2024'],
-        ];
-
-        const wsHeader = XLSX.utils.aoa_to_sheet(header, { origin: 'A1' });
-        XLSX.utils.book_append_sheet(wb, wsHeader, 'Header');
         XLSX.writeFile(wb, 'detailed-report.xlsx');
     };
 
     return (
         <div className="main-content">
             <div className="header-container">
-                <h1 className="detailed-title">SCO3251 - Detailed Report</h1>
-                <div className="date-range">Date : 01-01-2024 To 01-02-2024</div>
+                <h1 className="detailed-title">SCO Detailed Report</h1>
+                <div className="date-range">Date: {getQueryParams().startDate} To {getQueryParams().endDate}</div>
                 <Dropdown className="export-dropdown">
                     <Dropdown.Toggle variant="primary" id="dropdown-basic">
                         Export
@@ -145,55 +144,51 @@ const DetailedReport = () => {
                     <table className="table table-bordered">
                         <thead>
                             <tr>
-                                <th onClick={() => requestSort('srNo')}>
-                                    Sr. No <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('sco_employee_code')}>
+                                    SCO Employee Code <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('eventType')}>
-                                    Event Type <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('co_name')}>
+                                    CO Name <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('eventSubtype')}>
-                                    Event Subtype <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('co_employee_code')}>
+                                    CO Employee Code <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('callDuration')}>
-                                    Call Duration <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('sop_score')}>
+                                    SOP Score <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('reviewStatus')}>
-                                    Review Status <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('active_listening_score')}>
+                                    Active Listening Score <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('callType')}>
-                                    Call Type <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('relevent_detail_score')}>
+                                    Relevant Detail Score <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('sopScore')}>
-                                    SOP QA Score <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('address_tagging_score')}>
+                                    Address Tagging Score <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('listeningScore')}>
-                                    Listening QA Score <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('call_handled_time_score')}>
+                                    Call Handled Time Score <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('detailsCapturingScore')}>
-                                    Capturing QA Score <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('sco_qa_time')}>
+                                    SCO QA Time <FontAwesomeIcon icon={faSort} />
                                 </th>
-                                <th onClick={() => requestSort('addressTaggingScore')}>
-                                    Address QA Score <FontAwesomeIcon icon={faSort} />
-                                </th>
-                                <th onClick={() => requestSort('handledTime')}>
-                                    Handled Time <FontAwesomeIcon icon={faSort} />
+                                <th onClick={() => requestSort('sco_remarks')}>
+                                    SCO Remarks <FontAwesomeIcon icon={faSort} />
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentItems.map((item, index) => (
                                 <tr key={index}>
-                                    <td>{item.srNo}</td>
-                                    <td>{item.eventType}</td>
-                                    <td>{item.eventSubtype}</td>
-                                    <td>{item.callDuration}</td>
-                                    <td>{item.reviewStatus}</td>
-                                    <td>{item.callType}</td>
-                                    <td>{item.sopScore}</td>
-                                    <td>{item.listeningScore}</td>
-                                    <td>{item.detailsCapturingScore}</td>
-                                    <td>{item.addressTaggingScore}</td>
-                                    <td>{item.handledTime}</td>
+                                    <td>{item.sco_employee_code}</td>
+                                    <td>{item.co_name}</td>
+                                    <td>{item.co_employee_code}</td>
+                                    <td>{item.sop_score}</td>
+                                    <td>{item.active_listening_score}</td>
+                                    <td>{item.relevent_detail_score}</td>
+                                    <td>{item.address_tagging_score}</td>
+                                    <td>{item.call_handled_time_score}</td>
+                                    <td>{item.sco_qa_time}</td>
+                                    <td>{item.sco_remarks}</td>
                                 </tr>
                             ))}
                         </tbody>

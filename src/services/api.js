@@ -26,9 +26,9 @@ export const login = async (username, password) => {
 };
 
 // New function to fetch co-qa-data based on date range
-export const getCoQaDataByDateRange = async (startDate, endDate,reportType) => {
-    const url = `http://localhost:3000/api/users/co-qa-data?startDate=${startDate}&endDate=${endDate}`;
-
+export const getCoQaDataByDateRange = async (reportType,startDate, endDate) => {
+    const url = `http://localhost:3000/api/users/co-qa-data?reportType=${reportType}&startDate=${startDate}&endDate=${endDate}`;
+console.log(url);
     try {
         const response = await fetch(url, {
             method: 'GET',

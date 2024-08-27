@@ -37,7 +37,7 @@ const Dashboard = () => {
             case 'Non Voice Signal': return 'fas fa-wave-square';
             case 'No Response Calls': return 'fas fa-phone-slash';
             case 'Trip Monitoring Calls': return 'fas fa-road';
-            case 'Feedback calls': return 'fas fa-comments';
+            case 'Feedback Calls': return 'fas fa-comments';
             default: return 'fas fa-phone-alt';
         }
     };
@@ -51,7 +51,7 @@ const Dashboard = () => {
             case 'Non Voice Signal': return '#17a2b8';
             case 'No Response Calls': return '#ffc107';
             case 'Trip Monitoring Calls': return '#28a745';
-            case 'Feedback calls': return '#6610f2';
+            case 'Feedback Calls': return '#6610f2';
             default: return '#007bff';
         }
     };
