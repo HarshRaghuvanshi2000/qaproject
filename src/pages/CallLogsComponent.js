@@ -44,22 +44,25 @@ const CallLogsComponent = () => {
 
     const audioPlayerRef = useRef(null);
     
-        useEffect(() => {
-            const fetchCallData = async () => {
-                try {
-                    const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
-                    setCallLogs(data);
-                    setCurrentAudio(null); // Do not autoplay the first audio
-                    setCurrentLogDetails(data.length > 0 ? data[0] : null); // Select first call log by default
-                    paginateData(data);
-                } catch (error) {
-                    console.error("Error fetching call data:", error);
+    useEffect(() => {
+        const fetchCallData = async () => {
+            try {
+                const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
+                setCallLogs(data);
+                const pendingLog = data.find(log => log.review_status === 'Pending');
+                if (pendingLog) {
+                    setCurrentLogDetails(pendingLog); // Select first pending call log by default
                 }
-            };
-            if (signalTypeId) {
-                fetchCallData();
+                paginateData(data);
+            } catch (error) {
+                console.error("Error fetching call data:", error);
             }
-        }, [signalTypeId]);
+        };
+        if (signalTypeId) {
+            fetchCallData();
+        }
+    }, [signalTypeId]);
+    
 
     useEffect(() => {
         paginateData(callLogs);
@@ -99,6 +102,11 @@ const CallLogsComponent = () => {
     };
 
     const handlePlayPause = (file, index) => {
+        if (file.review_status === 'Completed') {
+            // Prevent play if review status is "Completed"
+            return;
+        }
+    
         if (currentAudio === file.voice_path) {
             if (isPlaying) {
                 audioPlayerRef.current.audio.current.pause();
@@ -113,6 +121,16 @@ const CallLogsComponent = () => {
             setCurrentLogDetails(file); // Ensure this line updates the details correctly
         }
     };
+    
+    const handleInfoClick = (file) => {
+        if (file.review_status === 'Completed') {
+            // Prevent access if review status is "Completed"
+            return;
+        }
+        setInfoPopupContent(file);
+        setInfoPopupOpen(true);
+    };
+    
 
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
@@ -240,12 +258,6 @@ const CallLogsComponent = () => {
     const handlePopupDragEnd = () => {
         setDragging(false);
     };
-    const handleInfoClick = (file) => {
-        console.log("Info button clicked for file:", file);
-        setInfoPopupContent(file);
-        setInfoPopupOpen(true);
-
-    };
 
     // Inside InfoPopup component
     
@@ -271,27 +283,36 @@ const CallLogsComponent = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedData.map((file, index) => (
-                                <tr
-                                    key={file.id}
-                                    className={currentAudio === file.voice_path ? 'playing' : ''}
-                                >
-                                    <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                                    <td>{file.event_maintype}</td>
-                                    <td>{file.event_subtype}</td>
-                                    <td>{file.call_duration_millis/5000}</td>
-                                    <td>{file.review_status}</td>
-                                    <td>
-                                        <button onClick={() => handlePlayPause(file, index)}>
-                                            {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
-                                        </button>
-                                    </td>
-                                    <td>
-                                    <button onClick={() => handleInfoClick(file)}>Info</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
+    {paginatedData.map((file, index) => (
+        <tr
+        key={file.id}
+        className={`${file.review_status === 'Completed' ? 'shaded' : (currentAudio === file.voice_path ? 'playing' : '')}`}
+        >
+            <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
+            <td>{file.event_maintype}</td>
+            <td>{file.event_subtype}</td>
+            <td>{file.call_duration_millis / 1000}</td>
+            <td>{file.review_status}</td>
+            <td>
+                <button
+                    onClick={() => handlePlayPause(file, index)}
+                    disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
+                >
+                    {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
+                </button>
+            </td>
+            <td>
+                <button
+                    onClick={() => handleInfoClick(file)}
+                    disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
+                >
+                    Info
+                </button>
+            </td>
+        </tr>
+    ))}
+</tbody>
+
                     </table>
                     <ul id="page-numbers">
                         {renderPageNumbers()}
@@ -326,7 +347,7 @@ const CallLogsComponent = () => {
                                         </tr>
                                         <tr>
                                             <td>Call Duration (In sec)</td>
-                                            <td>{currentLogDetails.call_duration_millis/5000}</td>
+                                            <td>{currentLogDetails.call_duration_millis/1000}</td>
                                         </tr>
                                         <tr>
                                             <td>Review Status</td>
