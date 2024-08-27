@@ -13,12 +13,12 @@ const Dashboard = () => {
                 const data = await getCallSummary();
                 const formattedData = data.map(call => ({
                     type: call.signalType,
-                    total: call.totalCalls,
-                    qa: call.completedCalls,
-                    pending: call.pendingCalls,
-                    typeId:call.signalTypeId,
-                    icon: getIconForType(call.signalType), // You can map icons based on the signalType
-                    color: getColorForType(call.signalType), // You can map colors based on the signalType
+                    total: Number(call.totalCalls), // Ensure these values are numbers
+                    qa: Number(call.completedCalls), // Ensure these values are numbers
+                    pending: Number(call.pendingCalls), // Ensure these values are numbers
+                    typeId: call.signalTypeId,
+                    icon: getIconForType(call.signalType), // Map icons based on the signalType
+                    color: getColorForType(call.signalType), // Map colors based on the signalType
                 }));
                 setCallData(formattedData);
             } catch (error) {
@@ -57,14 +57,50 @@ const Dashboard = () => {
         }
     };
 
+    // Icons for the overview section with color
+    const overviewIcons = {
+        total: { icon: 'fas fa-list-alt', color: '#007bff' },
+        completed: { icon: 'fas fa-check-circle', color: '#28a745' },
+        pending: { icon: 'fas fa-hourglass-half', color: '#ffc107' },
+    };
+
     return (
         <div className="main-content">
-            <h1 className="dashboard-title">Call Logs</h1>
+            <h1 className="dashboard-title">Dashboard</h1>
+            <div className="overview-section">
+                <div className="overview-card">
+                    <h2>
+                        <i className={overviewIcons.total.icon} style={{ color: overviewIcons.total.color, marginRight: '10px' }}></i>
+                        Total Calls
+                    </h2>
+                    <div className="overview-number">
+                        {callData.reduce((acc, call) => acc + call.total, 0)}
+                    </div>
+                </div>
+                <div className="overview-card">
+                    <h2>
+                        <i className={overviewIcons.completed.icon} style={{ color: overviewIcons.completed.color, marginRight: '10px' }}></i>
+                        Completed Calls
+                    </h2>
+                    <div className="overview-number">
+                        {callData.reduce((acc, call) => acc + call.qa, 0)}
+                    </div>
+                </div>
+                <div className="overview-card">
+                    <h2>
+                        <i className={overviewIcons.pending.icon} style={{ color: overviewIcons.pending.color, marginRight: '10px' }}></i>
+                        Pending Calls
+                    </h2>
+                    <div className="overview-number">
+                        {callData.reduce((acc, call) => acc + call.pending, 0)}
+                    </div>
+                </div>
+            </div>
             <div className="call-log-sections">
                 {callData.map((call, index) => (
                     <div className="call-log-section" key={index}>
                         <h2>
-                            <i className={`${call.icon}`} style={{ color: call.color, marginRight: '10px' }}></i>
+                            <i className={call.icon} style={{ color: call.color, marginRight: '10px' }}></i>
                             {call.type}
                         </h2>
                         <div className="call-log-details">
@@ -73,11 +109,11 @@ const Dashboard = () => {
                                 <span>{call.total}</span>
                             </div>
                             <div className="call-log-detail">
-                                <strong>Calls For QA</strong>
+                                <strong>Completed Calls</strong>
                                 <span>{call.qa}</span>
                             </div>
                             <div className="call-log-detail">
-                                <strong>Pending</strong>
+                                <strong>Pending calls</strong>
                                 <span>{call.pending}</span>
                             </div>
                             <div className="call-log-detail">
