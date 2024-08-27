@@ -52,7 +52,7 @@ const Dashboard = () => {
             case 'Non Voice Signal': return '#17a2b8';
             case 'No Response Calls': return '#ffc107';
             case 'Trip Monitoring Calls': return '#28a745';
-            case 'Feedback calls': return '#6610f2';
+            case 'Feedback Calls': return '#6610f2';
             default: return '#007bff';
         }
     };

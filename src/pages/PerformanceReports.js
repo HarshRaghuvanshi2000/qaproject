@@ -7,9 +7,11 @@ import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { getCoQaDataByDateRange } from '../services/api'; // Import your API function
 import '../App.css';
+import { Link } from 'react-router-dom';
+
 
 const PerformanceReports = () => {
-    const [reportType, setReportType] = useState("CO performance");
+    const [reportType, setReportType] = useState("CO");
     const [sortConfig, setSortConfig] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -17,34 +19,30 @@ const PerformanceReports = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [endDate, setEndDate] = useState("");
     const [startDate, setStartDate] = useState("");
-    const [selectedReportType, setSelectedReportType] = useState("CO performance"); // New state to track dropdown selection
-   
+
+    // Fetch data based on the current parameters
     const fetchData = useCallback(async () => {
         try {
-            const fetchedData = await getCoQaDataByDateRange(startDate, endDate, selectedReportType); // Include reportType in API call if needed
+            const fetchedData = await getCoQaDataByDateRange(reportType, startDate, endDate);
             setData(fetchedData);
-            setReportType(selectedReportType); // Update reportType only after search is clicked
         } catch (error) {
             console.error('Failed to fetch data:', error);
             setData([]); // Clear data in case of error
         }
-    }, [startDate, endDate, selectedReportType]);
+    }, [reportType, startDate, endDate]);
 
-
-
+    // Set default dates on component mount
     useEffect(() => {
         const today = new Date();
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
 
         setStartDate(lastMonth.toISOString().split('T')[0]);
         setEndDate(today.toISOString().split('T')[0]);
-    }, []);
+        fetchData(); // Automatically fetch data when the component mounts
 
-    useEffect(() => {
-        if (startDate && endDate) {
-            fetchData();
-        }
-    }, [startDate, endDate, fetchData]);
+    }, [fetchData]);
+
+    // Handle search button click
     const handleSearch = () => {
         if (startDate && endDate) {
             fetchData();
@@ -137,7 +135,7 @@ const PerformanceReports = () => {
 
     const downloadPDF = () => {
         const doc = new jsPDF();
-        const tableColumn = reportType === "CO performance"
+        const tableColumn = reportType === "CO"
             ? ["Name", "Login ID", "Total Calls", "Total Completed Calls", "Average Call Duration", "SOP Score", "Active Listening Score", "Details Capturing Score", "Address Tagging Score", "Handled Time", "Average Score"]
             : ["Name", "Login ID", "QA Calls", "Completed QA", "Average QA Completion Time", "Average Pending QA Per Day", "Detailed Report"];
 
@@ -175,9 +173,9 @@ const PerformanceReports = () => {
                     <Col md={2}>
                         <Form.Group controlId="reportType">
                             <Form.Label>Select Report Type *</Form.Label>
-                            <Form.Control as="select" value={selectedReportType} onChange={(e) => setSelectedReportType(e.target.value)}>                                
-                                <option value="CO performance">CO performance</option>
-                                <option value="SCO performance">SCO performance</option>
+                            <Form.Control as="select" value={reportType} onChange={(e) => setReportType(e.target.value)}>
+                                <option value="CO">CO performance</option>
+                                <option value="SCO">SCO performance</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
@@ -249,9 +247,25 @@ const PerformanceReports = () => {
             </div>
             <div className="table-responsive">
                 <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        {reportType === "CO performance" && <>
+                    <thead>
+                        <tr>
+                            
+                            {reportType === "CO" && <>
+                                <th>S.No</th> {/* New column for Sr. No */}
+                                <th onClick={() => requestSort('co_name')} className={getClassNamesFor('co_name')}>Name</th>
+                                <th onClick={() => requestSort('co_employee_code')} className={getClassNamesFor('co_employee_code')}>Login ID</th>
+                                <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
+                                <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
+                                <th onClick={() => requestSort('average_call_duration_millis')} className={getClassNamesFor('average_call_duration_millis')}>Average Call Duration</th>
+                                <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
+                                <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
+                                <th onClick={() => requestSort('relevent_detail_score')} className={getClassNamesFor('relevent_detail_score')}>Details Capturing Score</th>
+                                <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Tagging Score</th>
+                                <th onClick={() => requestSort('call_handled_time_score')} className={getClassNamesFor('call_handled_time_score')}>Handled Time</th>
+                                <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
+                            </>}
+                            {reportType === "SCO" && <>
+                                <th>S.No</th> {/* New column for Sr. No */}
                                 <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
                                     <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
                                     <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
@@ -291,23 +305,31 @@ const PerformanceReports = () => {
                                     <td>{row.call_handled_time_score}</td>
                                     <td>{row.average_score}</td>
                                     </>}
-                                    {reportType === "SCO performance" && <>
-                                        <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
-                                    <td>{row.co_call_duration}</td>
-                                    <td>{row.co_call_time}</td>
-                                    <td>{row.sop_score}</td>
-                                    <td>{row.sop_score}</td>
-                                    <td>{row.active_listening_score}</td>
+                                    {reportType === "SCO" && <>
+                                        <td>{index + 1}</td>
+                                        <td>{row.sco_employee_code}</td>
+                                        <td>{row.sco_employee_code}</td>
+                                        <td>{row.total_calls}</td>
+                                        <td>{row.total_calls}</td>
+                                        <td>{row.average_qa_time}</td>
+                                        <td>{row.pending_calls}</td>
+                                        <td>
+                                            <Link to={`/detailed-report?scoEmployeeCode=${row.sco_employee_code}&startDate=${startDate}&endDate=${endDate}`}>
+                                                Report
+                                            </Link>
+                                        </td>
                                     </>}
-                        </tr>
+                                </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="11" className="text-center">No data found</td>
+                                <td colSpan="12" className="text-center">No data found</td>
                             </tr>
                         )}
-                </tbody>
-            </Table>
+                    </tbody>
+
+
+                </Table>
             </div>
             <div className="pagination-container">
                 <ul className="pagination">

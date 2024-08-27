@@ -62,3 +62,19 @@
     justify-content: center;
     align-items: center;
 }
+.alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.alert.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 5px;
+}
+
