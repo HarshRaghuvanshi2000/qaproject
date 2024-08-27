@@ -267,43 +267,33 @@ const PerformanceReports = () => {
                             {reportType === "SCO" && <>
                                 <th>S.No</th> {/* New column for Sr. No */}
                                 <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
-                                    <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
-                                    <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
-                                    <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
-                                    <th onClick={() => requestSort('average_call_duration')} className={getClassNamesFor('average_call_duration')}>Average Call Duration (In Seconds)</th>
-                                    <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
-                                    <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
-                                    <th onClick={() => requestSort('details_capturing_score')} className={getClassNamesFor('details_capturing_score')}>Details Capturing Score</th>
-                                    <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Tagging Score</th>
-                                    <th onClick={() => requestSort('handled_time')} className={getClassNamesFor('handled_time')}>Handled Time</th>
-                                    <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
-                                    </>}
-                                    {reportType === "SCO performance" && <>
-                                <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
-                                    <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
-                                    <th onClick={() => requestSort('qa_calls')} className={getClassNamesFor('qa_calls')}>QA Calls</th>
-                                    <th onClick={() => requestSort('completed_qa')} className={getClassNamesFor('completed_qa')}>Completed QA</th>
-                                    <th onClick={() => requestSort('average_qa_completion_time')} className={getClassNamesFor('average_qa_completion_time')}>Average QA Completion Time</th>
-                                    <th onClick={() => requestSort('average_pending_qa_per_day')} className={getClassNamesFor('average_pending_qa_per_day')}>Average Pending QA Per Day</th>
-                                    <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>
-                                    </>}                            
-                    </tr>
-                </thead>
-                <tbody>
+                                <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
+                                <th onClick={() => requestSort('qa_calls')} className={getClassNamesFor('qa_calls')}>QA Calls</th>
+                                <th onClick={() => requestSort('completed_qa')} className={getClassNamesFor('completed_qa')}>Completed QA</th>
+                                <th onClick={() => requestSort('average_qa_completion_time')} className={getClassNamesFor('average_qa_completion_time')}>Average QA Completion Time</th>
+                                <th onClick={() => requestSort('average_pending_qa_per_day')} className={getClassNamesFor('average_pending_qa_per_day')}>Average Pending QA Per Day</th>
+                                <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>
+                            </>}
+                        </tr>
+                    </thead>
+                    <tbody>
                         {currentItems.length > 0 ? (
                             currentItems.map((row, index) => (
-                        <tr key={index}>
-                                      {reportType === "CO performance" && <>
-                                    <td>{row.co_name}</td>                                    <td>{row.co_employee_code}</td>
-                                    <td>{row.total_calls}</td>
-                                    <td>{row.total_completed_calls}</td>
-                                    <td>{row.average_call_duration_millis/1000}</td>
-                                    <td>{row.sop_score}</td>
-                                    <td>{row.active_listening_score}</td>
-                                    <td>{row.relevent_detail_score}</td>
-                                    <td>{row.address_tagging_score}</td>
-                                    <td>{row.call_handled_time_score}</td>
-                                    <td>{row.average_score}</td>
+                                <tr key={index}>
+                                     {/* Sr. No Column */}
+                                    {reportType === "CO" && <>
+                                        <td>{index + 1}</td>
+                                        <td>{row.co_name}</td>
+                                        <td>{row.co_employee_code}</td>
+                                        <td>{row.total_calls}</td>
+                                        <td>{row.total_completed_calls}</td>
+                                        <td>{(row.average_call_duration_millis / 1000).toFixed(2)} </td> {/* Converted milliseconds to seconds */}
+                                        <td>{row.sop_score}</td>
+                                        <td>{row.active_listening_score}</td>
+                                        <td>{row.relevent_detail_score}</td>
+                                        <td>{row.address_tagging_score}</td>
+                                        <td>{row.call_handled_time_score}</td>
+                                        <td>{(row.average_score).toFixed(2)}</td>
                                     </>}
                                     {reportType === "SCO" && <>
                                         <td>{index + 1}</td>
