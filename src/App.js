@@ -15,6 +15,8 @@ const AppContent = () => {
     const location = useLocation();
     const shouldShowHeaderAndSidebar = !['/login', '/'].includes(location.pathname);
 
+    const allowedPathsForLimitedUser = ['/dashboard', '/call-logs'];
+
     return (
         <>
             {shouldShowHeaderAndSidebar && (
@@ -26,21 +28,46 @@ const AppContent = () => {
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/login" element={<Login />} />
-                {['/dashboard', '/performance-reports', '/admin-settings', '/call-logs', '/detailed-report'].map((path) => (
-                    <Route
-                        key={path}
-                        path={path}
-                        element={
-                            <ProtectedRoute>
-                                {path === '/dashboard' && <Dashboard />}
-                                {path === '/performance-reports' && <PerformanceReports />}
-                                {path === '/admin-settings' && <AdminSettings />}
-                                {path === '/call-logs' && <CallLogsComponent />}
-                                {path === '/detailed-report' && <DetailedReport />}
-                            </ProtectedRoute>
-                        }
-                    />
-                ))}
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute allowedPaths={allowedPathsForLimitedUser}>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/call-logs"
+                    element={
+                        <ProtectedRoute allowedPaths={allowedPathsForLimitedUser}>
+                            <CallLogsComponent />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/performance-reports"
+                    element={
+                        <ProtectedRoute allowedPaths={[]}>
+                            <PerformanceReports />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin-settings"
+                    element={
+                        <ProtectedRoute allowedPaths={[]}>
+                            <AdminSettings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/detailed-report"
+                    element={
+                        <ProtectedRoute allowedPaths={[]}>
+                            <DetailedReport />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </>
     );

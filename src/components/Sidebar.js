@@ -1,3 +1,5 @@
+// src/components/Sidebar.js
+
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { FaBars, FaPhoneAlt, FaCog, FaFileAlt } from 'react-icons/fa';
@@ -7,8 +9,11 @@ import '../styles/Sidebar.css';
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true); // Default to true to show the sidebar
     const location = useLocation();
+    
+    // Retrieve the username from localStorage
+    const username = localStorage.getItem('username');
 
-    // Updated function to handle active link for both "/dashboard" and "/call-logs"
+    // Function to handle active link for both "/dashboard" and "/call-logs"
     const getActiveClass = (paths) => {
         return paths.some((path) => location.pathname.startsWith(path)) ? 'active-link' : '';
     };
@@ -38,22 +43,27 @@ const Sidebar = () => {
                                     <FaPhoneAlt className="icon" /> Dashboard
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink
-                                    to="/performance-reports"
-                                    className={getActiveClass(['/performance-reports','/detailed-report'])}
-                                >
-                                    <FaFileAlt className="icon" /> Performance Reports
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink
-                                    to="/admin-settings"
-                                    className={getActiveClass(['/admin-settings'])}
-                                >
-                                    <FaCog className="icon" /> Admin Settings
-                                </NavLink>
-                            </li>
+                            {/* Conditionally render links based on the username */}
+                            {username !== 'mor_2314' && (
+                                <>
+                                    <li>
+                                        <NavLink
+                                            to="/performance-reports"
+                                            className={getActiveClass(['/performance-reports', '/detailed-report'])}
+                                        >
+                                            <FaFileAlt className="icon" /> Performance Reports
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/admin-settings"
+                                            className={getActiveClass(['/admin-settings'])}
+                                        >
+                                            <FaCog className="icon" /> Admin Settings
+                                        </NavLink>
+                                    </li>
+                                </>
+                            )}
                         </ul>
                     </nav>
                 </div>

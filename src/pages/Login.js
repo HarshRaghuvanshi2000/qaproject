@@ -42,8 +42,7 @@ const Login = () => {
                 console.log('Login response:', response);
 
                 if (response.token) {
-                    // Handle successful login
-                    console.log('Login successful');
+                    localStorage.setItem('username', username); // Store the username
                     localStorage.setItem('token', response.token);
                     navigate('/dashboard');
                 } else {
