@@ -11,6 +11,7 @@ import { faSort } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { getScoDetailedData } from '../services/api';
 
 const DetailedReport = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,8 +35,7 @@ const DetailedReport = () => {
 
         const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/users/sco-detailed-data?scoEmployeeCode=${scoEmployeeCode}&startDate=${startDate}&endDate=${endDate}`);
-                const result = await response.json();
+                const result = await getScoDetailedData(scoEmployeeCode, startDate, endDate);
                 setData(result);
             } catch (error) {
                 console.error('Failed to fetch detailed report data:', error);
