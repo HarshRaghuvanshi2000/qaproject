@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 
 const PerformanceReports = () => {
     const [reportType, setReportType] = useState("CO");
+    const [reportTypeTable, setReportTypeTable] = useState("CO");
     const [sortConfig, setSortConfig] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -25,31 +26,36 @@ const PerformanceReports = () => {
         try {
             const fetchedData = await getCoQaDataByDateRange(reportType, startDate, endDate);
             setData(fetchedData);
+            setReportTypeTable(reportType);
         } catch (error) {
             console.error('Failed to fetch data:', error);
-            setData([]); // Clear data in case of error
+            setData([]);
         }
-    }, [reportType, startDate, endDate]);
+    }, [reportType, startDate, endDate]); // Keep these dependencies for when handleSearch is called
+    
 
     // Set default dates on component mount
-    useEffect(() => {
-        const today = new Date();
-        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+   // Update the useEffect to only set dates
+   useEffect(() => {
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    
+    setStartDate(lastMonth.toISOString().split('T')[0]);
+    setEndDate(today.toISOString().split('T')[0]);
 
-        setStartDate(lastMonth.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
-        fetchData(); // Automatically fetch data when the component mounts
+    fetchData(); // Fetch data on component mount
+}, []); // No dependency on fetchData
 
-    }, [fetchData]);
 
     // Handle search button click
     const handleSearch = () => {
         if (startDate && endDate) {
-            fetchData();
+            fetchData(); // Fetch data when search button is clicked
         } else {
             console.error('Please fill all required fields');
         }
     };
+    
 
     const handleSearchTermChange = (e) => {
         setSearchTerm(e.target.value);
@@ -250,7 +256,7 @@ const PerformanceReports = () => {
                     <thead>
                         <tr>
                             
-                            {reportType === "CO" && <>
+                            {reportTypeTable === "CO" && <>
                                 <th>S.No</th> {/* New column for Sr. No */}
                                 <th onClick={() => requestSort('co_name')} className={getClassNamesFor('co_name')}>Name</th>
                                 <th onClick={() => requestSort('co_employee_code')} className={getClassNamesFor('co_employee_code')}>Login ID</th>
@@ -264,7 +270,7 @@ const PerformanceReports = () => {
                                 <th onClick={() => requestSort('call_handled_time_score')} className={getClassNamesFor('call_handled_time_score')}>Handled Time</th>
                                 <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
                             </>}
-                            {reportType === "SCO" && <>
+                            {reportTypeTable === "SCO" && <>
                                 <th>S.No</th> {/* New column for Sr. No */}
                                 <th onClick={() => requestSort('name')} className={getClassNamesFor('name')}>Name</th>
                                 <th onClick={() => requestSort('login_id')} className={getClassNamesFor('login_id')}>Login ID</th>
@@ -281,7 +287,7 @@ const PerformanceReports = () => {
                             currentItems.map((row, index) => (
                                 <tr key={index}>
                                      {/* Sr. No Column */}
-                                    {reportType === "CO" && <>
+                                    {reportTypeTable === "CO" && <>
                                         <td>{index + 1}</td>
                                         <td>{row.co_name}</td>
                                         <td>{row.co_employee_code}</td>
@@ -295,7 +301,7 @@ const PerformanceReports = () => {
                                         <td>{row.call_handled_time_score}</td>
                                         <td>{(row.average_score).toFixed(2)}</td>
                                     </>}
-                                    {reportType === "SCO" && <>
+                                    {reportTypeTable === "SCO" && <>
                                         <td>{index + 1}</td>
                                         <td>{row.sco_employee_code}</td>
                                         <td>{row.sco_employee_code}</td>
