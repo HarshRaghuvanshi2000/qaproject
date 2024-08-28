@@ -13,12 +13,13 @@ import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup compone
 
 
 
-const itemsPerPage = 11;
+const itemsPerPage = 10;
 
 const CallLogsComponent = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const signalTypeId = queryParams.get('signalTypeId');
+    const signalType = queryParams.get('signalType')
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState(null);
@@ -267,8 +268,8 @@ const CallLogsComponent = () => {
         
     return (
         <div className="main-content">
-            <h1 className="call-logs-title">Actionable Call Logs</h1>
-            <div className="call-logs-content">
+      <h1 className="call-logs-title">{signalType}</h1>
+      <div className="call-logs-content">
                 <div className="table-container">
                     <table className="table call-logs-table">
                         <thead>
@@ -320,7 +321,7 @@ const CallLogsComponent = () => {
                 </div>
                 <div className="content-side">
                     <div className="audio-player-section">
-                        <p>Audio title will come here</p>
+                        <strong><p>Audio Player</p></strong>
                         <AudioPlayer
                             ref={audioPlayerRef}
                             src={currentAudio}

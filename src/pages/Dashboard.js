@@ -71,7 +71,7 @@ const Dashboard = () => {
                 <div className="overview-card">
                     <h2>
                         <i className={overviewIcons.total.icon} style={{ color: overviewIcons.total.color, marginRight: '10px' }}></i>
-                        Total Calls
+                        <strong>Total Calls</strong>
                     </h2>
                     <div className="overview-number">
                         {callData.reduce((acc, call) => acc + call.total, 0)}
@@ -80,7 +80,7 @@ const Dashboard = () => {
                 <div className="overview-card">
                     <h2>
                         <i className={overviewIcons.completed.icon} style={{ color: overviewIcons.completed.color, marginRight: '10px' }}></i>
-                        Completed Calls
+                        <strong>Completed Calls</strong>
                     </h2>
                     <div className="overview-number">
                         {callData.reduce((acc, call) => acc + call.qa, 0)}
@@ -89,7 +89,7 @@ const Dashboard = () => {
                 <div className="overview-card">
                     <h2>
                         <i className={overviewIcons.pending.icon} style={{ color: overviewIcons.pending.color, marginRight: '10px' }}></i>
-                        Pending Calls
+                        <strong>Pending Calls</strong>
                     </h2>
                     <div className="overview-number">
                         {callData.reduce((acc, call) => acc + call.pending, 0)}
@@ -119,7 +119,7 @@ const Dashboard = () => {
                             <div className="call-log-detail">
                                 <strong>Call List</strong>
                                 <span>
-                                    <Link to={`/call-logs?signalTypeId=${call.typeId}`} className="call-list-link">Table List</Link>
+                                    <Link to={`/call-logs?signalTypeId=${call.typeId}&signalType=${call.type}`} className="call-list-link">Table List</Link>
                                 </span>
                             </div>
                         </div>

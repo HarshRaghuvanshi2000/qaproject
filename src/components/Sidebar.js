@@ -7,7 +7,11 @@ import '../styles/Sidebar.css';
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true); // Default to true to show the sidebar
     const location = useLocation();
-    const getActiveClass = (path) => (location.pathname.startsWith(path) ? 'active-link' : '');
+
+    // Updated function to handle active link for both "/dashboard" and "/call-logs"
+    const getActiveClass = (paths) => {
+        return paths.some((path) => location.pathname.startsWith(path)) ? 'active-link' : '';
+    };
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -29,15 +33,15 @@ const Sidebar = () => {
                             <li>
                                 <NavLink
                                     to="/dashboard"
-                                    className={getActiveClass('/dashboard')}
+                                    className={getActiveClass(['/dashboard', '/call-logs'])} // Include both paths
                                 >
-                                    <FaPhoneAlt className="icon" /> Call Logs
+                                    <FaPhoneAlt className="icon" /> Dashboard
                                 </NavLink>
                             </li>
                             <li>
                                 <NavLink
                                     to="/performance-reports"
-                                    className={getActiveClass('/performance-reports')}
+                                    className={getActiveClass(['/performance-reports','/detailed-report'])}
                                 >
                                     <FaFileAlt className="icon" /> Performance Reports
                                 </NavLink>
@@ -45,7 +49,7 @@ const Sidebar = () => {
                             <li>
                                 <NavLink
                                     to="/admin-settings"
-                                    className={getActiveClass('/admin-settings')}
+                                    className={getActiveClass(['/admin-settings'])}
                                 >
                                     <FaCog className="icon" /> Admin Settings
                                 </NavLink>
