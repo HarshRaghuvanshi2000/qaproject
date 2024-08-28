@@ -1,6 +1,6 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export const login = async (username, password) => {
-    const url = `https://fakestoreapi.com/auth/auth/login`;
+    const url = `https://fakestoreapi.com/auth/login`;
     const body = JSON.stringify({ username, password });
 
     try {
