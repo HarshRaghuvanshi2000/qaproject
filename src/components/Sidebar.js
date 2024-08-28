@@ -38,7 +38,7 @@ const Sidebar = () => {
                             <li>
                                 <NavLink
                                     to="/dashboard"
-                                    className={getActiveClass(['/dashboard', '/call-logs'])} // Include both paths
+                                    className={getActiveClass(['/dashboard', '/call-logs'])}
                                 >
                                     <FaPhoneAlt className="icon" /> Dashboard
                                 </NavLink>
@@ -66,6 +66,14 @@ const Sidebar = () => {
                             )}
                         </ul>
                     </nav>
+                </div>
+                
+                {/* Footer section */}
+                <div className="sidebar-footer">
+                    <p className="powered-by">
+                        Powered By
+                        <a href="https://www.cdac.in" target="_blank" rel="noopener noreferrer" className="cdac-link"> C-DAC</a>
+                    </p>
                 </div>
             </aside>
         </>

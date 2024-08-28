@@ -101,3 +101,52 @@ nav ul li a.active-link {
       transform: translateX(0); /* Show sidebar when open */
   }
 }
+/* src/styles/Sidebar.css */
+/* src/styles/Sidebar.css */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ensures the sidebar takes the full height of the viewport */
+  width: 250px; /* Adjust width as needed */
+  background-color: #fff; /* Background color of the sidebar */
+  border-right: 1px solid #ddd; /* Sidebar border */
+  position: fixed; /* Fixes the sidebar to the left */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Stays on top of other content */
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.open {
+  transform: translateX(0); /* Ensures the sidebar is visible when open */
+}
+
+.sidebar-content {
+  flex: 1; /* Takes up the remaining space */
+  padding: 20px; /* Sidebar content padding */
+}
+
+.sidebar-footer {
+  padding: 10px;
+  text-align: center;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.powered-by {
+  color: #666; /* Color for "Powered By" */
+  margin: 0;
+}
+
+.cdac-link {
+  color: #3586dd; /* Color for "C-DAC" link */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.cdac-link:hover {
+  color: #0056b3; /* Hover color for "C-DAC" link */
+}
+
