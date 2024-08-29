@@ -42,8 +42,15 @@ const CallLogsComponent = () => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [Submitting, setSubmitting] = useState(false);
 
-
-
+    const formatDuration = (durationMillis) => {
+        const totalSeconds = Math.floor(durationMillis / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes} Min ${seconds} Sec`;
+      };
+      const displayValue = (value, defaultValue = "N/A") => {
+        return value !== 'NULL' && value !== undefined ? value : defaultValue;
+      };
     const audioPlayerRef = useRef(null);
     
     useEffect(() => {
@@ -278,7 +285,7 @@ const CallLogsComponent = () => {
                                 <th onClick={() => console.log("Sort Sr. No")}>Sr. No</th>
                                 <th onClick={() => console.log("Sort Event Type")}>Event Type</th>
                                 <th onClick={() => console.log("Sort Event Subtype")}>Event Subtype</th>
-                                <th onClick={() => console.log("Sort Call Duration")}>Call Duration (In sec)</th>
+                                <th onClick={() => console.log("Sort Call Duration")}>Call Duration</th>
                                 <th onClick={() => console.log("Sort Review Status")}>Review Status</th>
                                 <th>Play</th>
                                 <th>Details</th>
@@ -291,10 +298,10 @@ const CallLogsComponent = () => {
         className={`${file.review_status === 'Completed' ? 'shaded' : (currentAudio === file.voice_path ? 'playing' : '')}`}
         >
             <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-            <td>{file.event_maintype}</td>
-            <td>{file.event_subtype}</td>
-            <td>{file.call_duration_millis / 1000}</td>
-            <td>{file.review_status}</td>
+            <td>{displayValue(file.event_maintype)}</td>
+            <td>{displayValue(file.event_subtype)}</td>
+            <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
+            <td>{displayValue(file.review_status)}</td>
             <td>
                 <button
                     onClick={() => handlePlayPause(file, index)}
@@ -341,19 +348,19 @@ const CallLogsComponent = () => {
                                     <>
                                         <tr>
                                             <td>Event Type:</td>
-                                            <td>{currentLogDetails.event_maintype}</td>
+                                            <td>{displayValue(currentLogDetails.event_maintype)}</td>
                                         </tr>
                                         <tr>
                                             <td>Event Subtype</td>
-                                            <td>{currentLogDetails.event_subtype}</td>
+                                            <td>{displayValue(currentLogDetails.event_subtype)}</td>
                                         </tr>
                                         <tr>
-                                            <td>Call Duration (In sec)</td>
-                                            <td>{currentLogDetails.call_duration_millis/1000}</td>
-                                        </tr>
+                                            <td>Call Duration</td>
+                                            <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
+                                            </tr>
                                         <tr>
-                                            <td>Review Status</td>
-                                            <td>{currentLogDetails.review_status}</td>
+                                            <td>Additional Info</td>
+                                            <td>{displayValue(currentLogDetails.addl_info)}</td>
                                         </tr>
                                     </>
                                 ) : (

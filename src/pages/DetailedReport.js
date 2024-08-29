@@ -20,7 +20,11 @@ const DetailedReport = () => {
     const [data, setData] = useState([]);
 
     const location = useLocation();
-
+    const formatDurationFromSeconds = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
+        const seconds = totalSeconds % 60; // Calculate remaining seconds
+        return `${minutes} Min ${seconds} Sec`; // Return formatted string
+      };
     const getQueryParams = () => {
         const searchParams = new URLSearchParams(location.search);
         return {
@@ -187,7 +191,7 @@ const DetailedReport = () => {
                                     <td>{item.relevent_detail_score}</td>
                                     <td>{item.address_tagging_score}</td>
                                     <td>{item.call_handled_time_score}</td>
-                                    <td>{item.sco_qa_time}</td>
+                                    <td>{formatDurationFromSeconds(item.sco_qa_time)}</td>
                                     <td>{item.sco_remarks}</td>
                                 </tr>
                             ))}
