@@ -5,7 +5,6 @@ import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
 import { getCallData, submitCoQaData } from '../services/api';
-import SuccessPopup from '../components/SuccessPopup';
 import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
@@ -20,7 +19,6 @@ const CallLogsComponent = () => {
     const queryParams = new URLSearchParams(location.search);
     const signalTypeId = queryParams.get('signalTypeId');
     const signalType = queryParams.get('signalType')
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState(null);
     const [paginatedData, setPaginatedData] = useState([]);
@@ -41,6 +39,9 @@ const CallLogsComponent = () => {
     const [dragging, setDragging] = useState(false);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const infoPopupRef = useRef(null);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [Submitting, setSubmitting] = useState(false);
+
 
 
     const audioPlayerRef = useRef(null);
@@ -150,26 +151,20 @@ const CallLogsComponent = () => {
             return newIndex;
         });
     }; // 
-    const handleClosePopup = () => {
-        setIsPopupOpen(false);
-        // Optionally, refresh or reset the page here
-      };
-    const handleSubmit = async (event) => {
+      const handleSubmit = async (event) => {
         event.preventDefault();
-
+        // Disable the submit button to prevent multiple clicks
+        setSubmitting(true);
+    
         // Check if all required fields are selected
         if (!sopScore || !activeListeningScore || !releventDetailScore || !addressTaggingScore || !callHandledTimeScore) {
             alert("Please select all fields before submitting.");
+            setSubmitting(false);
             return;
         }
-
-        if (!currentLogDetails) {
-            alert("Please select a call log to submit.");
-            return;
-        }
-
+    
         const scoQaTime = calculateScoQaTime();
-
+    
         const data = {
             signalId: currentLogDetails.signal_id,
             scoQaTime,
@@ -181,14 +176,19 @@ const CallLogsComponent = () => {
             scoEmployeeCode: "SCO1",
             scoRemarks: remarks,
         };
-
+    
         try {
             const response = await submitCoQaData(data);
             console.log('Submission successful:', response);
-
+    
             // Show success popup
-            setIsPopupOpen(true);
-
+            setShowSuccessMessage(true);
+    
+            // Update the state instead of reloading the page
+            setCallLogs(callLogs.map(log => 
+                log.signal_id === currentLogDetails.signal_id ? {...log, review_status: 'Completed'} : log
+            ));
+    
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
@@ -196,15 +196,16 @@ const CallLogsComponent = () => {
             setAddressTaggingScore('');
             setCallHandledTimeScore('');
             setRemarks('');
-
-            // Smoothly refresh the page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 500); // Adjust the delay if necessary
         } catch (error) {
             console.error('Submission failed:', error);
+        } finally {
+            setSubmitting(false); // Re-enable the submit button
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 3000);
         }
     };
+    
     
 
     const calculateScoQaTime = () => {
@@ -415,11 +416,11 @@ const CallLogsComponent = () => {
                             <button type="submit">Submit</button>
                         </div>
                     </form>
-                    <SuccessPopup
-                        message="Your settings have been saved"
-                        isOpen={isPopupOpen}
-                        onClose={handleClosePopup}
-                    />
+                    {showSuccessMessage && (
+                        <div className="alert alert-success" role="alert">
+                           Successfully updated!
+                        </div>
+                    )}
                     <InfoPopup
                         isOpen={infoPopupOpen}
                         onClose={handleInfoPopupClose}
