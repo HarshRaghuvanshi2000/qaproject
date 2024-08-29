@@ -22,7 +22,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 50%;
+    width: 53%;
 }
 
 .call-logs-table {
@@ -37,7 +37,7 @@
 
 /* Container for the audio player, call information, and questionnaire */
 .content-side {
-    width: 48%;
+    width: 45%;
     display: flex;
     flex-direction: column;
 }
