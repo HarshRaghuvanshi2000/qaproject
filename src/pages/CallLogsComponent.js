@@ -13,7 +13,7 @@ import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup compone
 
 
 
-const itemsPerPage = 10;
+const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
     const location = useLocation();
