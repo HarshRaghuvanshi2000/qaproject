@@ -47,12 +47,12 @@ const CallLogsComponent = () => {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         return `${minutes} Min ${seconds} Sec`;
-      };
-      const displayValue = (value, defaultValue = "N/A") => {
+    };
+    const displayValue = (value, defaultValue = "N/A") => {
         return value !== 'NULL' && value !== undefined ? value : defaultValue;
-      };
+    };
     const audioPlayerRef = useRef(null);
-    
+
     useEffect(() => {
         const fetchCallData = async () => {
             try {
@@ -71,7 +71,7 @@ const CallLogsComponent = () => {
             fetchCallData();
         }
     }, [signalTypeId]);
-    
+
 
     useEffect(() => {
         paginateData(callLogs);
@@ -115,7 +115,7 @@ const CallLogsComponent = () => {
             // Prevent play if review status is "Completed"
             return;
         }
-    
+
         if (currentAudio === file.voice_path) {
             if (isPlaying) {
                 audioPlayerRef.current.audio.current.pause();
@@ -130,7 +130,7 @@ const CallLogsComponent = () => {
             setCurrentLogDetails(file); // Ensure this line updates the details correctly
         }
     };
-    
+
     const handleInfoClick = (file) => {
         if (file.review_status === 'Completed') {
             // Prevent access if review status is "Completed"
@@ -139,7 +139,7 @@ const CallLogsComponent = () => {
         setInfoPopupContent(file);
         setInfoPopupOpen(true);
     };
-    
+
 
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
@@ -158,44 +158,45 @@ const CallLogsComponent = () => {
             return newIndex;
         });
     }; // 
-      const handleSubmit = async (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         // Disable the submit button to prevent multiple clicks
         setSubmitting(true);
-    
-        // Check if all required fields are selected
-        if (!sopScore || !activeListeningScore || !releventDetailScore || !addressTaggingScore || !callHandledTimeScore) {
-            alert("Please select all fields before submitting.");
+
+        // Check if all required fields are selected, making 3rd and 4th options optional based on signalTypeId
+        if (!sopScore || !activeListeningScore || !callHandledTimeScore ||
+            (signalTypeId === '1' && (!releventDetailScore || !addressTaggingScore))) {
+            alert("Please select all required fields before submitting.");
             setSubmitting(false);
             return;
         }
-    
+
         const scoQaTime = calculateScoQaTime();
-    
+
         const data = {
             signalId: currentLogDetails.signal_id,
             scoQaTime,
             sopScore,
             activeListeningScore,
-            releventDetailScore,
-            addressTaggingScore,
+            releventDetailScore: signalTypeId === '1' ? releventDetailScore : null,
+            addressTaggingScore: signalTypeId === '1' ? addressTaggingScore : null,
             callHandledTimeScore,
             scoEmployeeCode: "SCO1",
             scoRemarks: remarks,
         };
-    
+
         try {
             const response = await submitCoQaData(data);
             console.log('Submission successful:', response);
-    
+
             // Show success popup
             setShowSuccessMessage(true);
-    
+
             // Update the state instead of reloading the page
-            setCallLogs(callLogs.map(log => 
-                log.signal_id === currentLogDetails.signal_id ? {...log, review_status: 'Completed'} : log
+            setCallLogs(callLogs.map(log =>
+                log.signal_id === currentLogDetails.signal_id ? { ...log, review_status: 'Completed' } : log
             ));
-    
+
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
@@ -212,8 +213,8 @@ const CallLogsComponent = () => {
             }, 3000);
         }
     };
-    
-    
+
+
 
     const calculateScoQaTime = () => {
         const endTime = new Date();
@@ -254,7 +255,7 @@ const CallLogsComponent = () => {
             setDragging(true);
         }
     };
-    
+
     const handlePopupDrag = (e) => {
         if (dragging) {
             setPopupPosition({
@@ -263,21 +264,21 @@ const CallLogsComponent = () => {
             });
         }
     };
-    
+
     const handlePopupDragEnd = () => {
         setDragging(false);
     };
 
     // Inside InfoPopup component
-    
+
     const handleInfoPopupClose = () => {
         setInfoPopupOpen(false);
     };
-        
+
     return (
         <div className="main-content">
-      <h1 className="call-logs-title">{signalType}</h1>
-      <div className="call-logs-content">
+            <h1 className="call-logs-title">{signalType}</h1>
+            <div className="call-logs-content">
                 <div className="table-container">
                     <table className="table call-logs-table">
                         <thead>
@@ -292,35 +293,58 @@ const CallLogsComponent = () => {
                             </tr>
                         </thead>
                         <tbody>
-    {paginatedData.map((file, index) => (
-        <tr
-        key={file.id}
-        className={`${file.review_status === 'Completed' ? 'shaded' : (currentAudio === file.voice_path ? 'playing' : '')}`}
-        >
-            <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-            <td>{displayValue(file.event_maintype)}</td>
-            <td>{displayValue(file.event_subtype)}</td>
-            <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
-            <td>{displayValue(file.review_status)}</td>
-            <td>
-                <button
-                    onClick={() => handlePlayPause(file, index)}
-                    disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
-                >
-                    {currentAudio === file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
-                </button>
-            </td>
-            <td>
-                <button
-                    onClick={() => handleInfoClick(file)}
-                    disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
-                >
-                    Info
-                </button>
-            </td>
-        </tr>
-    ))}
-</tbody>
+                            {paginatedData.map((file, index) => (
+                                <tr
+                                    key={file.id}
+                                    className={`${file.review_status === 'Completed'
+                                        ? 'shaded'
+                                        : currentAudio === file.voice_path
+                                            ? 'playing'
+                                            : ''
+                                        }`}
+                                >
+                                    <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
+                                    <td>{displayValue(file.event_maintype)}</td>
+                                    <td>{displayValue(file.event_subtype)}</td>
+                                    <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
+                                    <td
+                                        style={{
+                                            color:
+                                                file.review_status === 'Completed'
+                                                    ? '#006400'
+                                                    : file.review_status === 'Pending'
+                                                        ? '#eca02d'
+                                                        : 'inherit',
+                                                        fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {displayValue(file.review_status)}
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => handlePlayPause(file, index)}
+                                            disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
+                                        >
+                                            {currentAudio === file.voice_path && isPlaying ? (
+                                                <FaPause />
+                                            ) : (
+                                                <FaPlay />
+                                            )}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleInfoClick(file)}
+                                            disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
+                                        >
+                                            Info
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+
+
 
                     </table>
                     <ul id="page-numbers">
@@ -357,7 +381,7 @@ const CallLogsComponent = () => {
                                         <tr>
                                             <td>Call Duration</td>
                                             <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
-                                            </tr>
+                                        </tr>
                                         <tr>
                                             <td>Additional Info</td>
                                             <td>{displayValue(currentLogDetails.addl_info)}</td>
@@ -394,17 +418,29 @@ const CallLogsComponent = () => {
                         <div className="question">
                             <label>3. Correct and relevant details capturing</label>
                             <div className="options">
-                                <label><input type="radio" name="q3" value="1" checked={releventDetailScore === '1'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Poor</label>
-                                <label><input type="radio" name="q3" value="2" checked={releventDetailScore === '2'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Good</label>
-                                <label><input type="radio" name="q3" value="3" checked={releventDetailScore === '3'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Excellent</label>
+                                <label>
+                                    <input type="radio" name="q3" value="1" checked={releventDetailScore === '1'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Poor
+                                </label>
+                                <label>
+                                    <input type="radio" name="q3" value="2" checked={releventDetailScore === '2'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Good
+                                </label>
+                                <label>
+                                    <input type="radio" name="q3" value="3" checked={releventDetailScore === '3'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Excellent
+                                </label>
                             </div>
                         </div>
                         <div className="question">
-                            <label>4. Correct address tagging</label>
+                            <label>4. Correct address capturing</label>
                             <div className="options">
-                                <label><input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Poor</label>
-                                <label><input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Good</label>
-                                <label><input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Excellent</label>
+                                <label>
+                                    <input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Poor
+                                </label>
+                                <label>
+                                    <input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Good
+                                </label>
+                                <label>
+                                    <input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Excellent
+                                </label>
                             </div>
                         </div>
                         <div className="question">
@@ -425,7 +461,7 @@ const CallLogsComponent = () => {
                     </form>
                     {showSuccessMessage && (
                         <div className="alert alert-success" role="alert">
-                           Successfully updated!
+                            Successfully updated!
                         </div>
                     )}
                     <InfoPopup
