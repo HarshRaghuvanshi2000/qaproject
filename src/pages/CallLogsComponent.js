@@ -8,6 +8,8 @@ import { getCallData, submitCoQaData } from '../services/api';
 import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
+const AUDIO_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const WS_BASE_URL = 'ws://localhost:3000'; // WebSocket URL
 
 
 
@@ -41,6 +43,8 @@ const CallLogsComponent = () => {
     const infoPopupRef = useRef(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [Submitting, setSubmitting] = useState(false);
+    const [socket, setSocket] = useState(null);
+    const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
 
     const formatDuration = (durationMillis) => {
         const totalSeconds = Math.floor(durationMillis / 1000);
@@ -53,24 +57,56 @@ const CallLogsComponent = () => {
     };
     const audioPlayerRef = useRef(null);
 
-    useEffect(() => {
-        const fetchCallData = async () => {
-            try {
-                const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
-                setCallLogs(data);
-                const pendingLog = data.find(log => log.review_status === 'Pending');
-                if (pendingLog) {
-                    setCurrentLogDetails(pendingLog); // Select first pending call log by default
-                }
-                paginateData(data);
-            } catch (error) {
-                console.error("Error fetching call data:", error);
-            }
-        };
-        if (signalTypeId) {
-            fetchCallData();
+    // Inside useEffect for WebSocket connection
+useEffect(() => {
+
+    const ws = new WebSocket(WS_BASE_URL);
+    setSocket(ws);
+
+    ws.onopen = () => {
+        console.log('WebSocket Client Connected');
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+
+        if (message.type === 'STATUS_UPDATE') {
+            setCallLogs((prevLogs) =>
+                prevLogs.map((log) =>
+                    log.signal_id === message.callId ? { ...log, review_status: message.status } : log
+                )
+            );
         }
-    }, [signalTypeId]);
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket Client Disconnected');
+    };
+
+    return () => {
+        ws.close();
+    };
+}, []);
+
+    // Fetch call data on load and update the status
+useEffect(() => {
+    const fetchCallData = async () => {
+        try {
+            const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
+            setCallLogs(data);
+            const pendingLog = data.find(log => log.review_status === 'Pending');
+            if (pendingLog) {
+                setCurrentLogDetails(pendingLog); // Select first pending call log by default
+            }
+            paginateData(data);
+        } catch (error) {
+            console.error("Error fetching call data:", error);
+        }
+    };
+    if (signalTypeId) {
+        fetchCallData();
+    }
+}, [signalTypeId]);
 
 
     useEffect(() => {
@@ -111,12 +147,11 @@ const CallLogsComponent = () => {
     };
 
     const handlePlayPause = (file, index) => {
-        if (file.review_status === 'Completed') {
-            // Prevent play if review status is "Completed"
+        if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
             return;
         }
-
-        if (currentAudio === file.voice_path) {
+    
+        if (currentAudio === AUDIO_BASE_URL + (file.voice_path)) {
             if (isPlaying) {
                 audioPlayerRef.current.audio.current.pause();
             } else {
@@ -124,16 +159,18 @@ const CallLogsComponent = () => {
             }
             setIsPlaying(!isPlaying);
         } else {
-            setCurrentAudio(file.voice_path);
+            setCurrentAudio(AUDIO_BASE_URL + (file.voice_path));
             setIsPlaying(true);
             setCurrentAudioIndex(index);
-            setCurrentLogDetails(file); // Ensure this line updates the details correctly
+            setCurrentLogDetails(file);
+            socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'In Progress' }));
         }
     };
+    
 
     const handleInfoClick = (file) => {
-        if (file.review_status === 'Completed') {
-            // Prevent access if review status is "Completed"
+        if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
+            // Prevent access if review status is "Completed" or "In Progress"
             return;
         }
         setInfoPopupContent(file);
@@ -144,7 +181,7 @@ const CallLogsComponent = () => {
     const handlePrev = () => {
         setCurrentAudioIndex((prevIndex) => {
             const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
-            setCurrentAudio(callLogs[newIndex].voice_path);
+            setCurrentAudio(AUDIO_BASE_URL+(callLogs[newIndex].voice_path));
             setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
             return newIndex;
         });
@@ -153,16 +190,15 @@ const CallLogsComponent = () => {
     const handleNext = () => {
         setCurrentAudioIndex((prevIndex) => {
             const newIndex = (prevIndex + 1) % callLogs.length;
-            setCurrentAudio(callLogs[newIndex].voice_path);
+            setCurrentAudio(AUDIO_BASE_URL+(callLogs[newIndex].voice_path));
             setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
             return newIndex;
         });
     }; // 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        // Disable the submit button to prevent multiple clicks
         setSubmitting(true);
-
+    
         // Check if all required fields are selected, making 3rd and 4th options optional based on signalTypeId
         if (!sopScore || !activeListeningScore || !callHandledTimeScore ||
             (signalTypeId === '1' && (!releventDetailScore || !addressTaggingScore))) {
@@ -184,11 +220,11 @@ const CallLogsComponent = () => {
             scoEmployeeCode: "SCO1",
             scoRemarks: remarks,
         };
-
+    
         try {
             const response = await submitCoQaData(data);
             console.log('Submission successful:', response);
-
+    
             // Show success popup
             setShowSuccessMessage(true);
 
@@ -196,7 +232,9 @@ const CallLogsComponent = () => {
             setCallLogs(callLogs.map(log =>
                 log.signal_id === currentLogDetails.signal_id ? { ...log, review_status: 'Completed' } : log
             ));
-
+    
+            socket.send(JSON.stringify({ type: 'SUBMIT_STATUS', userId: employeeCode, callId: currentLogDetails.signal_id, status: 'Completed' }));
+    
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
@@ -293,56 +331,53 @@ const CallLogsComponent = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedData.map((file, index) => (
-                                <tr
-                                    key={file.id}
-                                    className={`${file.review_status === 'Completed'
-                                        ? 'shaded'
-                                        : currentAudio === file.voice_path
-                                            ? 'playing'
-                                            : ''
-                                        }`}
-                                >
-                                    <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                                    <td>{displayValue(file.event_maintype)}</td>
-                                    <td>{displayValue(file.event_subtype)}</td>
-                                    <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
-                                    <td
-                                        style={{
-                                            color:
-                                                file.review_status === 'Completed'
-                                                    ? '#006400'
-                                                    : file.review_status === 'Pending'
-                                                        ? '#eca02d'
-                                                        : 'inherit',
-                                                        fontWeight: 'bold',
-                                        }}
-                                    >
-                                        {displayValue(file.review_status)}
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() => handlePlayPause(file, index)}
-                                            disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
-                                        >
-                                            {currentAudio === file.voice_path && isPlaying ? (
-                                                <FaPause />
-                                            ) : (
-                                                <FaPlay />
-                                            )}
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() => handleInfoClick(file)}
-                                            disabled={file.review_status === 'Completed'} // Disable button if status is "Completed"
-                                        >
-                                            Info
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
+    {paginatedData.map((file, index) => (
+        <tr
+            key={file.id}
+            className={`${
+                file.review_status === 'Completed' || file.review_status === 'In Progress'
+                    ? 'shaded'
+                    : currentAudio === AUDIO_BASE_URL + file.voice_path
+                    ? 'playing'
+                    : ''
+            }`}
+        >
+            <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
+            <td>{displayValue(file.event_maintype)}</td>
+            <td>{displayValue(file.event_subtype)}</td>
+            <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
+            <td
+                style={{
+                    color:
+                        file.review_status === 'Completed'
+                            ? '#006400' // Dark green for "Completed"
+                            : file.review_status === 'Pending'
+                            ? '#eca02d' // Orange for "Pending"
+                            : 'inherit',
+                    fontWeight: 'bold',
+                }}
+            >
+                {displayValue(file.review_status)}
+            </td>
+            <td>
+                <button
+                    onClick={() => handlePlayPause(file, index)}
+                    disabled={file.review_status === 'Completed' || file.review_status === 'In Progress'} // Disable button if status is "Completed" or "In Progress"
+                >
+                    {currentAudio === AUDIO_BASE_URL + file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
+                </button>
+            </td>
+            <td>
+                <button
+                    onClick={() => handleInfoClick(file)}
+                    disabled={file.review_status === 'Completed' || file.review_status === 'In Progress'} // Disable button if status is "Completed" or "In Progress"
+                >
+                    Info
+                </button>
+            </td>
+        </tr>
+    ))}
+</tbody>
 
 
 
