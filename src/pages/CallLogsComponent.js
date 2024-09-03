@@ -8,7 +8,7 @@ import { getCallData, submitCoQaData } from '../services/api';
 import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
-const AUDIO_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName=';
 const WS_BASE_URL = 'ws://localhost:3000'; // WebSocket URL
 
 
