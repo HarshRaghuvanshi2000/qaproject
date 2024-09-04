@@ -17,6 +17,7 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
           <p><strong>Event Registration Time:</strong> {logDetails.event_registration_time}</p>
           <p><strong>Event Subtype:</strong> {logDetails.event_subtype}</p>
           <p><strong>Priority:</strong> {logDetails.priority}</p>
+          <p><strong>Additional Info</strong> {logDetails.addl_info}</p>
           <p><strong>Victim Address:</strong> {logDetails.victim_address}</p>
           <p><strong>Victim Age:</strong> {logDetails.victim_age}</p>
           <p><strong>Victim Gender:</strong> {logDetails.victim_gender}</p>

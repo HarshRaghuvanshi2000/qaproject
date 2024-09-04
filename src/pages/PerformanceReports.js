@@ -20,7 +20,18 @@ const PerformanceReports = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [endDate, setEndDate] = useState("");
     const [startDate, setStartDate] = useState("");
+    const formatDuration = (durationMillis) => {
+        const totalSeconds = Math.floor(durationMillis / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes} Min ${seconds} Sec`;
+      };
 
+      const formatDurationFromSeconds = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
+        const seconds = totalSeconds % 60; // Calculate remaining seconds
+        return `${minutes} Min ${seconds} Sec`; // Return formatted string
+      };
     // Fetch data based on the current parameters
     const fetchData = useCallback(async () => {
         try {
@@ -293,7 +304,7 @@ const PerformanceReports = () => {
                                         <td>{row.co_employee_code}</td>
                                         <td>{row.total_calls}</td>
                                         <td>{row.total_completed_calls}</td>
-                                        <td>{(row.average_call_duration_millis / 1000).toFixed(2)} </td> {/* Converted milliseconds to seconds */}
+                                        <td>{formatDuration(row.average_call_duration_millis)} </td> {/* Converted milliseconds to seconds */}
                                         <td>{row.sop_score}</td>
                                         <td>{row.active_listening_score}</td>
                                         <td>{row.relevent_detail_score}</td>
@@ -307,7 +318,7 @@ const PerformanceReports = () => {
                                         <td>{row.sco_employee_code}</td>
                                         <td>{row.total_calls}</td>
                                         <td>{row.total_calls}</td>
-                                        <td>{row.average_qa_time}</td>
+                                        <td>{formatDurationFromSeconds(row.average_qa_time)}</td>
                                         <td>{row.pending_calls}</td>
                                         <td>
                                             <Link to={`/detailed-report?scoEmployeeCode=${row.sco_employee_code}&startDate=${startDate}&endDate=${endDate}`}>
