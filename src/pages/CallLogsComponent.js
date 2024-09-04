@@ -8,42 +8,40 @@ import { getCallData, submitCoQaData } from '../services/api';
 import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
+
 const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName=';
 const WS_BASE_URL = 'ws://localhost:3000'; // WebSocket URL
-
-
-
 
 const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const signalTypeId = queryParams.get('signalTypeId');
-    const signalType = queryParams.get('signalType')
-    const [currentPage, setCurrentPage] = useState(1);
-    const [currentAudio, setCurrentAudio] = useState(null);
-    const [paginatedData, setPaginatedData] = useState([]);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
-    const [callLogs, setCallLogs] = useState([]);
-    const [currentLogDetails, setCurrentLogDetails] = useState(null);
-    const [sopScore, setSopScore] = useState('');
-    const [activeListeningScore, setActiveListeningScore] = useState('');
-    const [releventDetailScore, setReleventDetailScore] = useState('');
-    const [addressTaggingScore, setAddressTaggingScore] = useState('');
-    const [callHandledTimeScore, setCallHandledTimeScore] = useState('');
-    const [remarks, setRemarks] = useState('');
-    const [startTime, setStartTime] = useState(null);
-    const [infoPopupOpen, setInfoPopupOpen] = useState(false);
-    const [infoPopupContent, setInfoPopupContent] = useState(null);
-    const [popupPosition, setPopupPosition] = useState({ top: '50%', left: '50%' });
-    const [dragging, setDragging] = useState(false);
-    const [offset, setOffset] = useState({ x: 0, y: 0 });
-    const infoPopupRef = useRef(null);
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [Submitting, setSubmitting] = useState(false);
-    const [socket, setSocket] = useState(null);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const signalTypeId = queryParams.get('signalTypeId');
+  const signalType = queryParams.get('signalType');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [paginatedData, setPaginatedData] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  const [callLogs, setCallLogs] = useState([]);
+  const [currentLogDetails, setCurrentLogDetails] = useState(null);
+  const [sopScore, setSopScore] = useState('');
+  const [activeListeningScore, setActiveListeningScore] = useState('');
+  const [releventDetailScore, setReleventDetailScore] = useState('');
+  const [addressTaggingScore, setAddressTaggingScore] = useState('');
+  const [callHandledTimeScore, setCallHandledTimeScore] = useState('');
+  const [remarks, setRemarks] = useState('');
+  const [startTime, setStartTime] = useState(null);
+  const [infoPopupOpen, setInfoPopupOpen] = useState(false);
+  const [infoPopupContent, setInfoPopupContent] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ top: '50%', left: '50%' });
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const infoPopupRef = useRef(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [Submitting, setSubmitting] = useState(false);
+  const [socket, setSocket] = useState(null);
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
 
     const formatDuration = (durationMillis) => {
@@ -55,117 +53,105 @@ const CallLogsComponent = () => {
     const displayValue = (value, defaultValue = "N/A") => {
         return value !== 'NULL' && value !== undefined ? value : defaultValue;
     };
-    const audioPlayerRef = useRef(null);
+  const audioPlayerRef = useRef(null);
 
-    // Inside useEffect for WebSocket connection
-useEffect(() => {
-
+  useEffect(() => {
     const ws = new WebSocket(WS_BASE_URL);
     setSocket(ws);
 
     ws.onopen = () => {
-        console.log('WebSocket Client Connected');
+      console.log('WebSocket Client Connected');
     };
 
     ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-
-        if (message.type === 'STATUS_UPDATE') {
-            setCallLogs((prevLogs) =>
-                prevLogs.map((log) =>
-                    log.signal_id === message.callId ? { ...log, review_status: message.status } : log
-                )
-            );
-        }
+      const message = JSON.parse(event.data);
+      if (message.type === 'STATUS_UPDATE') {
+        setCallLogs((prevLogs) =>
+          prevLogs.map((log) =>
+            log.signal_id === message.callId ? { ...log, review_status: message.status } : log
+          )
+        );
+      }
     };
 
     ws.onclose = () => {
-        console.log('WebSocket Client Disconnected');
+      console.log('WebSocket Client Disconnected');
     };
 
     return () => {
-        ws.close();
+      ws.close();
     };
-}, []);
+  }, []);
 
-    // Fetch call data on load and update the status
-useEffect(() => {
+  useEffect(() => {
     const fetchCallData = async () => {
-        try {
-            const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
-            setCallLogs(data);
-            const pendingLog = data.find(log => log.review_status === 'Pending');
-            if (pendingLog) {
-                setCurrentLogDetails(pendingLog); // Select first pending call log by default
-            }
-            paginateData(data);
-        } catch (error) {
-            console.error("Error fetching call data:", error);
+      try {
+        const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
+        setCallLogs(data);
+        const pendingLog = data.find(log => log.review_status === 'Pending');
+        if (pendingLog) {
+          setCurrentLogDetails(pendingLog); // Select first pending call log by default
         }
+        paginateData(data);
+      } catch (error) {
+        console.error("Error fetching call data:", error);
+      }
     };
     if (signalTypeId) {
-        fetchCallData();
+      fetchCallData();
     }
-}, [signalTypeId]);
+  }, [signalTypeId]);
+  
 
+  useEffect(() => {
+    paginateData(callLogs);
+  }, [currentPage, callLogs]);
+  
+  useEffect(() => {
+    if (audioPlayerRef.current && currentAudio) {
+        audioPlayerRef.current.audio.current.play();
+        setIsPlaying(true);
+    }
+}, [currentAudio]);
 
-    useEffect(() => {
-        paginateData(callLogs);
-    }, [currentPage, callLogs]);
+  useEffect(() => {
+    if (currentLogDetails) {
+        // Clear form fields when currentLogDetails change
+        setSopScore('');
+        setActiveListeningScore('');
+        setReleventDetailScore('');
+        setAddressTaggingScore('');
+        setCallHandledTimeScore('');
+        setRemarks('');
+        setStartTime(null);
+    }
+}, [currentLogDetails]);
+const paginateData = (data) => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    setPaginatedData(data.slice(indexOfFirstItem, indexOfLastItem));
+  };
 
-    useEffect(() => {
-        if (audioPlayerRef.current && currentAudio) {
-            audioPlayerRef.current.audio.current.play();
-            setIsPlaying(true);
-        }
-    }, [currentAudio]);
+  const handlePlayPause = (file, index) => {
+    if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
+      return;
+    }
 
-    useEffect(() => {
-        const totalPages = Math.ceil(callLogs.length / itemsPerPage);
-        const newPage = Math.floor(currentAudioIndex / itemsPerPage) + 1;
-        if (newPage <= totalPages) {
-            setCurrentPage(newPage);
-        }
-    }, [currentAudioIndex, callLogs]);
-
-    useEffect(() => {
-        if (currentLogDetails) {
-            // Clear form fields when currentLogDetails change
-            setSopScore('');
-            setActiveListeningScore('');
-            setReleventDetailScore('');
-            setAddressTaggingScore('');
-            setCallHandledTimeScore('');
-            setRemarks('');
-            setStartTime(null);
-        }
-    }, [currentLogDetails]);
-    const paginateData = (data) => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        setPaginatedData(data.slice(indexOfFirstItem, indexOfLastItem));
-    };
-
-    const handlePlayPause = (file, index) => {
-        if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
-            return;
-        }
-    
-        if (currentAudio === AUDIO_BASE_URL + (file.voice_path)) {
-            if (isPlaying) {
-                audioPlayerRef.current.audio.current.pause();
-            } else {
-                audioPlayerRef.current.audio.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        } else {
-            setCurrentAudio(AUDIO_BASE_URL + (file.voice_path));
-            setIsPlaying(true);
-            setCurrentAudioIndex(index);
-            setCurrentLogDetails(file);
-            socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'In Progress' }));
-        }
-    };
+    if (currentAudio === AUDIO_BASE_URL + (file.voice_path)) {
+      if (isPlaying) {
+        audioPlayerRef.current.audio.current.pause();
+      } else {
+        audioPlayerRef.current.audio.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    } else {
+      setCurrentAudio(AUDIO_BASE_URL + (file.voice_path));
+      setIsPlaying(true);
+      setCurrentAudioIndex(index);
+      setCurrentLogDetails(file);
+      socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'In Progress' }));
+    }
+  };
     
 
     const handleInfoClick = (file) => {
@@ -178,22 +164,20 @@ useEffect(() => {
     };
 
 
-    const handlePrev = () => {
-        setCurrentAudioIndex((prevIndex) => {
-            const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
-            setCurrentAudio(AUDIO_BASE_URL+(callLogs[newIndex].voice_path));
-            setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
-            return newIndex;
-        });
-    };
+  const handlePrev = () => {
+    setCurrentAudioIndex((prevIndex) => {
+      const newIndex = (prevIndex - 1 + callLogs.length) % callLogs.length;
+      setCurrentAudio(AUDIO_BASE_URL + (callLogs[newIndex].voice_path));
+      return newIndex;
+    });
+  };
 
-    const handleNext = () => {
-        setCurrentAudioIndex((prevIndex) => {
-            const newIndex = (prevIndex + 1) % callLogs.length;
-            setCurrentAudio(AUDIO_BASE_URL+(callLogs[newIndex].voice_path));
-            setCurrentPage(Math.floor(newIndex / itemsPerPage) + 1);
-            return newIndex;
-        });
+  const handleNext = () => {
+    setCurrentAudioIndex((prevIndex) => {
+      const newIndex = (prevIndex + 1) % callLogs.length;
+      setCurrentAudio(AUDIO_BASE_URL + (callLogs[newIndex].voice_path));
+      return newIndex;
+    });
     }; // 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -257,32 +241,32 @@ useEffect(() => {
     const calculateScoQaTime = () => {
         const endTime = new Date();
         return Math.floor((endTime - startTime) / 1000).toString(); // Calculate time in seconds
-    };
+  };
 
-    const renderPageNumbers = () => {
-        const totalPages = Math.ceil(callLogs.length / itemsPerPage);
-        const pageNumbers = [];
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+  const renderPageNumbers = () => {
+    const totalPages = Math.ceil(callLogs.length / itemsPerPage);
+    const pageNumbers = [];
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
 
-        if (currentPage > 1) {
-            pageNumbers.push(<li key="prev" onClick={() => setCurrentPage(currentPage - 1)}>&laquo;</li>);
-        }
+    if (currentPage > 1) {
+      pageNumbers.push(<li key="prev" onClick={() => setCurrentPage(currentPage - 1)}>&laquo;</li>);
+    }
 
-        for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(
-                <li key={i} className={i === currentPage ? 'active' : ''} onClick={() => setCurrentPage(i)}>
-                    {i}
-                </li>
-            );
-        }
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(
+        <li key={i} className={i === currentPage ? 'active' : ''} onClick={() => setCurrentPage(i)}>
+          {i}
+        </li>
+      );
+    }
 
-        if (currentPage < totalPages) {
-            pageNumbers.push(<li key="next" onClick={() => setCurrentPage(currentPage + 1)}>&raquo;</li>);
-        }
+    if (currentPage < totalPages) {
+      pageNumbers.push(<li key="next" onClick={() => setCurrentPage(currentPage + 1)}>&raquo;</li>);
+    }
 
-        return pageNumbers;
-    };
+    return pageNumbers;
+  };
     const handlePopupDragStart = (e) => {
         if (infoPopupRef.current) {
             const rect = infoPopupRef.current.getBoundingClientRect();
