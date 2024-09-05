@@ -8,6 +8,8 @@ import * as XLSX from 'xlsx';
 import { getCoQaDataByDateRange } from '../services/api'; // Import your API function
 import '../App.css';
 import { Link } from 'react-router-dom';
+import logoHaryana from '../assets/images/haryanapolice.png';
+import logoCdac from '../assets/images/logo_cdac.png';
 
 
 const PerformanceReports = () => {
@@ -152,19 +154,58 @@ const PerformanceReports = () => {
 
     const downloadPDF = () => {
         const doc = new jsPDF();
+        
+        // Add the first image (left-side logo)
+        const img1 = new Image();
+        img1.src = logoHaryana;
+        doc.addImage(img1, 'PNG', 10, 10, 30, 30); // Adjust the position and size as needed
+        
+        // Add the second image (right-side logo)
+        const img2 = new Image();
+        img2.src = logoCdac;
+        doc.addImage(img2, 'PNG', 170, 10, 30, 30); // Adjust the position and size as needed
+        
+        // Add the title and sub-title in the center
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Quality Assurance Management System', 105, 20, null, null, 'center');
+    
+        // Add the date range below the title
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Performance Report From ${startDate} to ${endDate}`, 105, 28, null, null, 'center');
+        
+        // Add organization name
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Emergency Response Centre (ERSS)', 105, 36, null, null, 'center');
+        
+        // Add organization address
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Sector 3, Panchkula, Haryana 134112', 105, 42, null, null, 'center');
+        
+        // Move down to add the table
+        doc.setLineWidth(0.5);
+        doc.line(10, 50, 200, 50); // Add a line below the header
+        
+        // Define table columns based on the reportType
         const tableColumn = reportType === "CO"
             ? ["Name", "Login ID", "Total Calls", "Total Completed Calls", "Average Call Duration", "SOP Score", "Active Listening Score", "Details Capturing Score", "Address Tagging Score", "Handled Time", "Average Score"]
             : ["Name", "Login ID", "QA Calls", "Completed QA", "Average QA Completion Time", "Average Pending QA Per Day", "Detailed Report"];
-
+    
         const tableRows = data.map(row => Object.values(row));
-
+    
+        // Add the table
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
+            startY: 55,  // Start after the header
         });
-
+    
         doc.save("report.pdf");
     };
+    
 
     const downloadExcel = () => {
         const ws = XLSX.utils.json_to_sheet(data);
