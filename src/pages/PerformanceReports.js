@@ -173,7 +173,7 @@ const PerformanceReports = () => {
         // Add the date range below the title
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Performance Report From ${startDate} to ${endDate}`, 105, 28, null, null, 'center');
+        doc.text(`${reportTypeTable} Performance Report From ${startDate} to ${endDate}`, 105, 28, null, null, 'center');
         
         // Add organization name
         doc.setFontSize(14);
@@ -190,12 +190,13 @@ const PerformanceReports = () => {
         doc.line(10, 50, 200, 50); // Add a line below the header
         
         // Define table columns based on the reportType
-        const tableColumn = reportType === "CO"
+        const tableColumn = reportTypeTable === "CO"
             ? ["Name", "Login ID", "Total Calls", "Total Completed Calls", "Average Call Duration", "SOP Score", "Active Listening Score", "Details Capturing Score", "Address Tagging Score", "Handled Time", "Average Score"]
             : ["Name", "Login ID", "QA Calls", "Completed QA", "Average QA Completion Time", "Average Pending QA Per Day", "Detailed Report"];
     
-        const tableRows = data.map(row => Object.values(row));
-    
+        const tableRows = reportTypeTable === "CO" 
+        ? data.map(row => [row.co_name, row.co_employee_code, row.total_calls, row.total_completed_calls, formatDuration(row.average_call_duration_millis), row.sop_score, row.active_listening_score, row.relevent_detail_score, row.address_tagging_score, row.call_handled_time_score, row.average_score])
+        : data.map(row => [row.sco_employee_code, row.sco_employee_code, row.total_calls, row.total_calls, formatDurationFromSeconds(row.average_qa_time), row.pending_calls, "Report"]);
         // Add the table
         doc.autoTable({
             head: [tableColumn],

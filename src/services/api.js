@@ -24,6 +24,38 @@ export const login = async (username, password) => {
     }
 };
 
+// New login function for the ERSS API
+export const erssLogin = async (username, password, agentType = 'CRS_AGENT', module = 'IM') => {
+    const url = `${BASE_URL}/erss-login`;
+    const body = JSON.stringify({
+        username,
+        password,
+        agentType,
+        module,
+    });
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body,
+        });
+
+        if (!response.ok) {
+            throw new Error('Login failed');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+    }
+};
+
+
 export const getCoQaDataByDateRange = async (reportType, startDate, endDate) => {
     const url = `${BASE_URL}/co-qa-data?reportType=${reportType}&startDate=${startDate}&endDate=${endDate}`;
     console.log(url);
