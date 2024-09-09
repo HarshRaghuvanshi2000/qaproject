@@ -45,16 +45,17 @@ const CallLogsComponent = () => {
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
 
     const formatDuration = (durationMillis) => {
+        if (durationMillis == null) return null;
         const totalSeconds = Math.floor(durationMillis / 1000);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         return `${minutes} Min ${seconds} Sec`;
     };
-    const displayValue = (value, defaultValue = "N/A") => {
-        return value !== 'NULL' && value !== undefined ? value : defaultValue;
-    };
+    const displayValue= (value) => {
+        return value != null && value !== '' ? value : 'N/A';
+      }
+      
   const audioPlayerRef = useRef(null);
-
   useEffect(() => {
     const ws = new WebSocket(WS_BASE_URL);
     setSocket(ws);
