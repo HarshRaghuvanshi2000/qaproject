@@ -5,7 +5,7 @@ import '../styles/Login.css'; // Correct path to the CSS file
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faLock, faEye, faEyeSlash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/images/logo_hry112.png';
-import { login } from '../services/api'; // Import your login API function
+import { login,erssLogin } from '../services/api'; // Import your login API function
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
@@ -25,25 +25,33 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         const validationErrors = {};
-
+    
         if (!username) {
             validationErrors.username = true;
         }
-
+    
         if (!password) {
             validationErrors.password = true;
         }
-
+    
         setErrors(validationErrors);
-
+    
         if (!validationErrors.username && !validationErrors.password) {
             try {
-                const response = await login(username, password);
-                console.log('Login response:', response);
-
-                if (response.token) {
+                const response = await erssLogin(username, password);
+                console.log('Login Response:', response); // Debugging line
+    
+                // Access userProfileDto from response.payLoad
+                const userProfileDto = response?.payLoad?.userProfileDto;
+    
+                if (response?.token && userProfileDto) {
+                    console.log(response);
                     localStorage.setItem('username', username); // Store the username
                     localStorage.setItem('token', response.token);
+                    localStorage.setItem('employeeCode', userProfileDto.employee_code);
+                    localStorage.setItem('desgName', userProfileDto.desg_name);
+                    localStorage.setItem('desgId', userProfileDto.designation_id);
+                    localStorage.setItem('fullName', userProfileDto.fullname);
                     navigate('/dashboard');
                 } else {
                     // Handle login failure (e.g., show error message)
@@ -56,6 +64,7 @@ const Login = () => {
             }
         }
     };
+    
 
     return (
         <div className="login-wrapper">

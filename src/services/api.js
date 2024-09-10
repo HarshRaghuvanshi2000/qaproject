@@ -1,29 +1,4 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-export const login = async (username, password) => {
-    const url = `https://fakestoreapi.com/auth/login`;
-    const body = JSON.stringify({ username, password });
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body,
-        });
-
-        if (!response.ok) {
-            throw new Error('Login failed');
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
-    }
-};
-
 // New login function for the ERSS API
 export const erssLogin = async (username, password, agentType = 'CRS_AGENT', module = 'IM') => {
     const url = `${BASE_URL}/erss-login`;

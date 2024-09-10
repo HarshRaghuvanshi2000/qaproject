@@ -11,7 +11,7 @@ const Sidebar = () => {
     const location = useLocation();
     
     // Retrieve the username from localStorage
-    const username = localStorage.getItem('username');
+    const desgId = localStorage.getItem('desgId');
 
     // Function to handle active link for both "/dashboard" and "/call-logs"
     const getActiveClass = (paths) => {
@@ -44,7 +44,7 @@ const Sidebar = () => {
                                 </NavLink>
                             </li>
                             {/* Conditionally render links based on the username */}
-                            {username !== 'mor_2314' && (
+                            {desgId !== '74' && (
                                 <>
                                     <li>
                                         <NavLink

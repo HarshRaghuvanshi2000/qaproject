@@ -9,9 +9,8 @@ import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
 
-const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName=';
-const WS_BASE_URL = 'ws://localhost:3000'; // WebSocket URL
-
+const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName='
+const WS_BASE_URL ='http://172.16.110.206:3000';
 const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
@@ -41,7 +40,11 @@ const CallLogsComponent = () => {
   const infoPopupRef = useRef(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [Submitting, setSubmitting] = useState(false);
-  const [socket, setSocket] = useState(null);
+    const [socket, setSocket] = useState(null);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const userName = localStorage.getItem('fullName');
+    const userEmployeeCode = localStorage.getItem('employeeCode');
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
 
     const formatDuration = (durationMillis) => {
@@ -138,6 +141,13 @@ const paginateData = (data) => {
       return;
     }
 
+    if (!file.voice_path) {
+        setErrorMessage('No audio file found');
+        setShowErrorMessage(true);
+        setTimeout(() => setShowErrorMessage(false), 3000); // Hide the popup after 3 seconds
+    } else {
+        setErrorMessage(''); // Clear the error message if audio path is valid
+    }
     if (currentAudio === AUDIO_BASE_URL + (file.voice_path)) {
       if (isPlaying) {
         audioPlayerRef.current.audio.current.pause();
@@ -202,7 +212,8 @@ const paginateData = (data) => {
             releventDetailScore: signalTypeId === '1' ? releventDetailScore : null,
             addressTaggingScore: signalTypeId === '1' ? addressTaggingScore : null,
             callHandledTimeScore,
-            scoEmployeeCode: "SCO1",
+            scoEmployeeCode: userEmployeeCode,
+            scoName: userName,
             scoRemarks: remarks,
         };
     
@@ -383,6 +394,8 @@ const paginateData = (data) => {
                             onPause={() => setIsPlaying(false)}
                             autoPlay={false}
                             onPlay={() => setStartTime(new Date())}
+                            onError={(error) => console.error("Audio playback error:", error)}
+                            onEnded={() => setIsPlaying(false)}
                         />
                     </div>
                     <div className="call-information">
@@ -479,6 +492,11 @@ const paginateData = (data) => {
                             <button type="submit">Submit</button>
                         </div>
                     </form>
+                    {showErrorMessage && (
+                        <div className="error-popup">
+                            <p>{errorMessage}</p>
+                        </div>
+                    )}
                     {showSuccessMessage && (
                         <div className="alert alert-success" role="alert">
                             Successfully updated!

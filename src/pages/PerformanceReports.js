@@ -356,7 +356,7 @@ const PerformanceReports = () => {
                                     </>}
                                     {reportTypeTable === "SCO" && <>
                                         <td>{index + 1}</td>
-                                        <td>{row.sco_employee_code}</td>
+                                        <td>{row.sco_name}</td>
                                         <td>{row.sco_employee_code}</td>
                                         <td>{row.total_calls}</td>
                                         <td>{row.total_calls}</td>

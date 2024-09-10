@@ -8,6 +8,8 @@ const Header = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [userName, setUserName] = useState('');
+  const [userDesignation, setUserDesignation] = useState('');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -29,6 +31,14 @@ const Header = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const storedUserName = localStorage.getItem('fullName');
+    const storedUserDesignation = localStorage.getItem('desgName');
+    setUserName(storedUserName || 'User'); // Fallback if not found
+    setUserDesignation(storedUserDesignation || 'Designation'); // Fallback if not found
   }, []);
 
   const handleLogout = () => {
@@ -63,8 +73,8 @@ const Header = () => {
           <span className="custom-current-time">{formatDate(currentTime)}</span>
           <img src={profile_logo} alt="Profile" className="custom-profile-pic" />
           <div className="custom-user-details">
-            <span className="custom-user-name">Anjali</span>
-            <span className="custom-user-designation">SCO</span>
+            <span className="custom-user-name">{userName}</span>
+            <span className="custom-user-designation">{userDesignation}</span>
           </div>
           <div className="custom-dropdown" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="custom-dropdown-toggle">
