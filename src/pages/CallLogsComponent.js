@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
 
 const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName='
-const WS_BASE_URL ='http://172.16.110.206:3000';
+const WS_BASE_URL ='ws://10.26.0.19:3001';
 const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
