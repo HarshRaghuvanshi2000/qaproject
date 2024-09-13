@@ -10,7 +10,9 @@ import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
 
 const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName='
-const WS_BASE_URL ='ws://10.26.0.19:3001';
+const WS_BASE_URL ='ws://localhost:3000';
+// const WS_BASE_URL ='ws://10.26.0.19:3001';
+
 const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
@@ -137,7 +139,7 @@ const paginateData = (data) => {
   };
 
   const handlePlayPause = (file, index) => {
-    if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
+    if (file.review_status === 'Completed' || file.review_status === 'Being Reviewed') {
       return;
     }
 
@@ -160,14 +162,14 @@ const paginateData = (data) => {
       setIsPlaying(true);
       setCurrentAudioIndex(index);
       setCurrentLogDetails(file);
-      socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'In Progress' }));
+      socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'Being Reviewed' }));
     }
   };
     
 
     const handleInfoClick = (file) => {
-        if (file.review_status === 'Completed' || file.review_status === 'In Progress') {
-            // Prevent access if review status is "Completed" or "In Progress"
+        if (file.review_status === 'Completed' || file.review_status === 'Being Reviewed') {
+            // Prevent access if review status is "Completed" or "Being Reviewed"
             return;
         }
         setInfoPopupContent(file);
@@ -331,7 +333,7 @@ const paginateData = (data) => {
         <tr
             key={file.id}
             className={`${
-                file.review_status === 'Completed' || file.review_status === 'In Progress'
+                file.review_status === 'Completed' || file.review_status === 'Being Reviewed'
                     ? 'shaded'
                     : currentAudio === AUDIO_BASE_URL + file.voice_path
                     ? 'playing'
@@ -358,7 +360,7 @@ const paginateData = (data) => {
             <td>
                 <button
                     onClick={() => handlePlayPause(file, index)}
-                    disabled={file.review_status === 'Completed' || file.review_status === 'In Progress'} // Disable button if status is "Completed" or "In Progress"
+                    disabled={file.review_status === 'Completed' || file.review_status === 'Being Reviewed'} // Disable button if status is "Completed" or "Being Reviewed"
                 >
                     {currentAudio === AUDIO_BASE_URL + file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
                 </button>
@@ -366,7 +368,7 @@ const paginateData = (data) => {
             <td>
                 <button
                     onClick={() => handleInfoClick(file)}
-                    disabled={file.review_status === 'Completed' || file.review_status === 'In Progress'} // Disable button if status is "Completed" or "In Progress"
+                    disabled={file.review_status === 'Completed' || file.review_status === 'Being Reviewed'} // Disable button if status is "Completed" or "Being Reviewed"
                 >
                     Info
                 </button>
