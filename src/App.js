@@ -10,6 +10,7 @@ import Header from './components/Header';
 import CallLogsComponent from './pages/CallLogsComponent';
 import DetailedReport from './pages/DetailedReport';
 import ProtectedRoute from './components/ProtectedRoute';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const AppContent = () => {
     const location = useLocation();

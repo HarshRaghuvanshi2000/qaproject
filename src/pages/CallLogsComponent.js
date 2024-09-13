@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/CallLogsComponent.css';
-import { FaPlay, FaPause } from 'react-icons/fa';
+import { FaPlay, FaPause, FaBackward, FaForward } from 'react-icons/fa'; // Add necessary icons
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
@@ -389,6 +389,12 @@ const paginateData = (data) => {
                             ref={audioPlayerRef}
                             src={currentAudio}
                             showSkipControls
+                            customIcons={{
+                                play: <FaPlay />,
+                                pause: <FaPause />,
+                                previous: <FaBackward />,  // Local icon for "previous"
+                                next: <FaForward />,       // Local icon for "next"
+                            }}
                             onClickPrevious={handlePrev}
                             onClickNext={handleNext}
                             onPause={() => setIsPlaying(false)}

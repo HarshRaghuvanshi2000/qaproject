@@ -29,17 +29,17 @@ const Dashboard = () => {
         fetchCallSummary();
     }, []);
 
-    // Map signal types to icons
+    // Map signal types to free Font Awesome icons
     const getIconForType = (type) => {
         switch (type) {
-            case 'Actionable Calls': return 'fas fa-phone-alt';
-            case 'Abusive Calls': return 'fas fa-exclamation-circle';
-            case 'Missed Calls': return 'fas fa-times-circle';
-            case 'Non Voice Signal': return 'fas fa-wave-square';
-            case 'No Response Calls': return 'fas fa-phone-slash';
-            case 'Trip Monitoring Calls': return 'fas fa-road';
-            case 'Feedback Calls': return 'fas fa-comments';
-            default: return 'fas fa-phone-alt';
+            case 'Actionable Calls': return 'fas fa-phone'; // Free icon for phone
+            case 'Abusive Calls': return 'fas fa-exclamation-triangle'; // Free warning icon
+            case 'Missed Calls': return 'fas fa-times-circle'; // Free times icon
+            case 'Non Voice Signal': return 'fas fa-signal'; // Free signal icon
+            case 'No Response Calls': return 'fas fa-phone-slash'; // Free phone-slash icon
+            case 'Trip Monitoring Calls': return 'fas fa-road'; // Free road icon
+            case 'Feedback Calls': return 'fas fa-comments'; // Free comments icon
+            default: return 'fas fa-phone'; // Default free phone icon
         }
     };
 
@@ -59,9 +59,9 @@ const Dashboard = () => {
 
     // Icons for the overview section with color
     const overviewIcons = {
-        total: { icon: 'fas fa-list-alt', color: '#007bff' },
-        completed: { icon: 'fas fa-check-circle', color: '#28a745' },
-        pending: { icon: 'fas fa-hourglass-half', color: '#ffc107' },
+        total: { icon: 'fas fa-list', color: '#007bff' }, // Free list icon
+        completed: { icon: 'fas fa-check-circle', color: '#28a745' }, // Free check-circle icon
+        pending: { icon: 'fas fa-hourglass-half', color: '#ffc107' }, // Free hourglass icon
     };
 
     return (
