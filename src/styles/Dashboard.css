@@ -117,3 +117,22 @@
         margin: 10px auto;
     }
 }
+.link-button {
+    background: none;
+    border: none;
+    color: #004085;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+    display: inline;
+}
+
+/* Prevent any change on hover */
+.link-button:hover {
+    color: rgb(225, 225, 233); /* Same color as the normal state */
+    text-decoration: underline; /* Keep the underline as is */
+    cursor: pointer; /* Keep the pointer cursor */
+}

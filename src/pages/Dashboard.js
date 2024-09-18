@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import {Link,useNavigate } from 'react-router-dom'; // useNavigate instead of useHistory
 import { getCallSummary } from '../services/api'; // Import the API function
 import '../styles/Dashboard.css';
 import '../App.css';
 
 const Dashboard = () => {
     const [callData, setCallData] = useState([]);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate(); // Initialize navigate
 
     useEffect(() => {
         const fetchCallSummary = async () => {
@@ -54,6 +57,18 @@ const Dashboard = () => {
             case 'Trip Monitoring Calls': return '#28a745';
             case 'Feedback Calls': return '#6610f2';
             default: return '#007bff';
+        }
+    };
+
+    // Handle click on "Table List"
+    const handleTableListClick = (call) => {
+        if (call.total === 0) {
+            setErrorMessage('No calls available to display.');
+            setShowErrorMessage(true);
+            setTimeout(() => setShowErrorMessage(false), 3000); // Hide after 3 seconds
+        } else {
+            console.log('hii');
+            navigate(`/call-logs?signalTypeId=${call.typeId}&signalType=${call.type}`);
         }
     };
 
@@ -119,13 +134,24 @@ const Dashboard = () => {
                             <div className="call-log-detail">
                                 <strong>Call List</strong>
                                 <span>
-                                    <Link to={`/call-logs?signalTypeId=${call.typeId}&signalType=${call.type}`} className="call-list-link">Table List</Link>
+                                <button
+            onClick={() => handleTableListClick(call)}
+            className="link-button"
+        >
+            Table List
+        </button>
                                 </span>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {showErrorMessage && (
+                <div className="error-popup">
+                    <p>{errorMessage}</p>
+                </div>
+            )}
         </div>
     );
 };

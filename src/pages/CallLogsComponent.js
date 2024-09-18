@@ -192,17 +192,20 @@ const paginateData = (data) => {
       return newIndex;
     });
     }; // 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event) => { 
         event.preventDefault();
         setSubmitting(true);
     
         // Check if all required fields are selected, making 3rd and 4th options optional based on signalTypeId
         if (!sopScore || !activeListeningScore || !callHandledTimeScore ||
             (signalTypeId === '1' && (!releventDetailScore || !addressTaggingScore))) {
-            alert("Please select all required fields before submitting.");
+            setErrorMessage("Please select all required fields before submitting");
+            setShowErrorMessage(true);
+            setTimeout(() => setShowErrorMessage(false), 3000);
             setSubmitting(false);
             return;
-        }
+            }
+    
 
         const scoQaTime = calculateScoQaTime();
 
@@ -402,7 +405,11 @@ const paginateData = (data) => {
                             onPause={() => setIsPlaying(false)}
                             autoPlay={false}
                             onPlay={() => setStartTime(new Date())}
-                            onError={(error) => console.error("Audio playback error:", error)}
+                            onError={(error) => {
+                                setErrorMessage('Audio file not accessible on this device');
+                                setShowErrorMessage(true);
+                                setTimeout(() => setShowErrorMessage(false), 3000); // Hide after 3 seconds
+                            }}
                             onEnded={() => setIsPlaying(false)}
                         />
                     </div>
@@ -416,15 +423,15 @@ const paginateData = (data) => {
                                             <td>{displayValue(currentLogDetails.event_maintype)}</td>
                                         </tr>
                                         <tr>
-                                            <td>Event Subtype</td>
+                                            <td>Event Subtype:</td>
                                             <td>{displayValue(currentLogDetails.event_subtype)}</td>
                                         </tr>
                                         <tr>
-                                            <td>Call Duration</td>
+                                            <td>Call Duration:</td>
                                             <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
                                         </tr>
                                         <tr>
-                                            <td>Additional Info</td>
+                                            <td>Additional Info:</td>
                                             <td>{displayValue(currentLogDetails.addl_info)}</td>
                                         </tr>
                                     </>
