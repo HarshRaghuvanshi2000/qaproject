@@ -48,6 +48,7 @@ const CallLogsComponent = () => {
     const userName = localStorage.getItem('fullName');
     const userEmployeeCode = localStorage.getItem('employeeCode');
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
+    const [currentCallId, setCurrentCallId] = useState(null); // Track the currently reviewed call
 
     const formatDuration = (durationMillis) => {
         if (durationMillis == null) return null;
@@ -61,53 +62,124 @@ const CallLogsComponent = () => {
       }
       
   const audioPlayerRef = useRef(null);
+
   useEffect(() => {
-    const ws = new WebSocket(WS_BASE_URL);
-    setSocket(ws);
-
-    ws.onopen = () => {
-      console.log('WebSocket Client Connected');
+    const handleBeforeUnload = () => {
+      if (currentLogDetails && currentLogDetails.review_status === 'Pending' && isPlaying) {
+        socket.send(JSON.stringify({
+          type: 'UPDATE_STATUS',
+          userId: employeeCode,
+          callId: currentLogDetails.signal_id,
+          status: 'Pending', // Update the call status to "Pending" on page refresh or navigation
+        }));
+      }
     };
+  
+    // Attach the event listener for beforeunload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+  
+    // Clean up the event listener when component unmounts
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentLogDetails, isPlaying, socket, employeeCode]);
+  // Step 1: Fetch call data before establishing WebSocket connection
+  useEffect(() => {
+      const fetchCallData = async () => {
+          try {
+              const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
+              setCallLogs(data);
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'STATUS_UPDATE') {
+              // Initialize WebSocket connection after data is loaded
+              initializeWebSocket();
+
+              const pendingLog = data.find(log => log.review_status === 'Pending');
+              if (pendingLog) {
+                  setCurrentLogDetails(pendingLog); // Select first pending call log by default
+              }
+          } catch (error) {
+              console.error("Error fetching call data:", error);
+          }
+      };
+
+      if (signalTypeId) {
+          fetchCallData();
+      }
+  }, [signalTypeId]);
+
+  // Step 2: Initialize WebSocket connection
+  const initializeWebSocket = () => {
+      const ws = new WebSocket(WS_BASE_URL);
+      setSocket(ws);
+
+      ws.onopen = () => {
+          console.log('WebSocket Client Connected');
+      };
+
+      ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+              handleWebSocketMessage(message);
+      };
+
+      ws.onclose = () => {
+          console.log('WebSocket Client Disconnected');
+      };
+  };
+
+  // Step 3: Handle WebSocket messages
+  const handleWebSocketMessage = (message) => {
+
+    if (message.type === 'INITIAL_CALL_STATUSES') {
+        console.log(message);
+        // Initial setup to load all the current call statuses
         setCallLogs((prevLogs) =>
-          prevLogs.map((log) =>
-            log.signal_id === message.callId ? { ...log, review_status: message.status } : log
-          )
+          prevLogs.map((log) => {
+            const callStatus = message.callStatuses[log.signal_id];
+            if (callStatus) {
+              // If the userId matches, the user sees 'Pending' when they are reviewing
+              if (callStatus.userId === employeeCode && callStatus.status === 'Being Reviewed') {
+                return { ...log, review_status: 'Pending' };
+              } else if (callStatus.status === 'Being Reviewed') {
+                // Other users see 'Being Reviewed'
+                return { ...log, review_status: 'Being Reviewed' };
+              } else {
+                // For any other status (like 'Pending'), apply it directly
+                return { ...log, review_status: callStatus.status };
+              }
+            }
+            return log;
+          })
         );
       }
-    };
+      if (message.type === 'STATUS_UPDATE' ) {
+        console.log(message);
+        console.log('aagya');
 
-    ws.onclose = () => {
-      console.log('WebSocket Client Disconnected');
-    };
+          setCallLogs((prevLogs) =>
+              prevLogs.map((log) => {
+                  if (log.signal_id === message.callId) {
 
-    return () => {
-      ws.close();
-    };
-  }, []);
+                      // If the employeeCode matches, only the current user should see 'Being Reviewed'
+                      if (message.userId === employeeCode && message.status === 'Being Reviewed') {
+                          return { ...log, review_status: 'Pending' };
+                      } else if (message.status === 'Being Reviewed') {
 
-  useEffect(() => {
-    const fetchCallData = async () => {
-      try {
-        const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
-        setCallLogs(data);
-        const pendingLog = data.find(log => log.review_status === 'Pending');
-        if (pendingLog) {
-          setCurrentLogDetails(pendingLog); // Select first pending call log by default
-        }
-        paginateData(data);
-      } catch (error) {
-        console.error("Error fetching call data:", error);
+                          // Other users see 'Pending' for the same call if it's reviewed by another user
+                          return { ...log, review_status: 'Being Reviewed' };
+                      } 
+                      else if (message.status === 'Pending'){
+                        return { ...log, review_status: 'Pending' };
+                      }
+                      else {
+                          // For 'Pending' status, apply the message directly
+                          return { ...log, review_status: message.status };
+                      }
+                  }
+                  return log;
+              })
+          );
       }
-    };
-    if (signalTypeId) {
-      fetchCallData();
-    }
-  }, [signalTypeId]);
-  
+  };
 
   useEffect(() => {
     paginateData(callLogs);
@@ -143,12 +215,31 @@ const paginateData = (data) => {
       return;
     }
 
+    if (
+        currentCallId && 
+        currentCallId !== file.signal_id && 
+        callLogs &&
+        !callLogs.some(log => log.signal_id === currentCallId && log.review_status === 'Completed') // Check if currentCallId is not 'Completed'
+    ) {
+        socket.send(
+            JSON.stringify({
+                type: 'UPDATE_STATUS',
+                userId: employeeCode,
+                callId: currentCallId,
+                status: 'Pending', // Mark the previous call as 'Pending' for all users
+            })
+        );
+    }
+
+    setCurrentCallId(file.signal_id);
+
+
     if (!file.voice_path) {
-        setErrorMessage('No audio file found');
-        setShowErrorMessage(true);
-        setTimeout(() => setShowErrorMessage(false), 3000); // Hide the popup after 3 seconds
+      setErrorMessage('No audio file found');
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000); // Hide the popup after 3 seconds
     } else {
-        setErrorMessage(''); // Clear the error message if audio path is valid
+      setErrorMessage(''); // Clear the error message if audio path is valid
     }
     if (currentAudio === AUDIO_BASE_URL + (file.voice_path)) {
       if (isPlaying) {
@@ -162,10 +253,18 @@ const paginateData = (data) => {
       setIsPlaying(true);
       setCurrentAudioIndex(index);
       setCurrentLogDetails(file);
-      socket.send(JSON.stringify({ type: 'UPDATE_STATUS', userId: employeeCode, callId: file.signal_id, status: 'Being Reviewed' }));
-    }
+      setCurrentCallId(file.signal_id);
+
+      // Notify other users that this call is being reviewed
+      socket.send(JSON.stringify({ 
+        type: 'UPDATE_STATUS', 
+        userId: employeeCode, 
+        callId: file.signal_id, 
+        status: 'Being Reviewed' 
+      }));
+};
   };
-    
+  
 
     const handleInfoClick = (file) => {
         if (file.review_status === 'Completed' || file.review_status === 'Being Reviewed') {
@@ -235,7 +334,7 @@ const paginateData = (data) => {
             ));
     
             socket.send(JSON.stringify({ type: 'SUBMIT_STATUS', userId: employeeCode, callId: currentLogDetails.signal_id, status: 'Completed' }));
-    
+
             // Clear form fields after successful submission
             setSopScore('');
             setActiveListeningScore('');
