@@ -512,36 +512,53 @@ const paginateData = (data) => {
                             onEnded={() => setIsPlaying(false)}
                         />
                     </div>
-                    <div className="call-information">
-                        <table>
-                            <tbody>
-                                {currentLogDetails ? (
-                                    <>
-                                        <tr>
-                                            <td>Event Type:</td>
-                                            <td>{displayValue(currentLogDetails.event_maintype)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Event Subtype:</td>
-                                            <td>{displayValue(currentLogDetails.event_subtype)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Call Duration:</td>
-                                            <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Additional Info:</td>
-                                            <td>{displayValue(currentLogDetails.addl_info)}</td>
-                                        </tr>
-                                    </>
-                                ) : (
-                                    <tr>
-                                        <td colSpan="2">Select a call log to view details</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <div className="call-information"> 
+    <table>
+        <tbody>
+            {currentLogDetails ? (
+                <>
+                    {/* First Row - Event Type, Event Subtype */}
+                    <tr>
+                        <td className="field-label">Event Type:</td>
+                        <td>{displayValue(currentLogDetails.event_maintype)}</td>
+                        <td className="field-label">Event Subtype:</td>
+                        <td>{displayValue(currentLogDetails.event_subtype)}</td>
+                    </tr>
+                    
+                    {/* Second Row - Priority, Near PS */}
+                    <tr>
+                        <td className="field-label">Priority:</td>
+                        <td>
+                                                <span className={`priority ${currentLogDetails.priority ? currentLogDetails.priority.toLowerCase() : ''}`}>
+                                                    {currentLogDetails.priority ? displayValue(currentLogDetails.priority) : 'Not Selected'}
+                                                </span>
+                                            </td>
+                        <td className="field-label">Near PS:</td>
+                        <td>{displayValue(currentLogDetails.near_ps)}</td>
+                    </tr>
+                    
+                    {/* Third Row - District Code, Call Duration */}
+                    <tr>
+                        <td className="field-label">District Code:</td>
+                        <td>{displayValue(currentLogDetails.district_code)}</td>
+                        <td className="field-label">Call Duration:</td>
+                        <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
+                    </tr>
+
+                    {/* Fourth Row - Additional Information */}
+                    <tr>
+                        <td className="field-label">Additional Info:</td>
+                        <td colSpan="3">{displayValue(currentLogDetails.addl_info)}</td>
+                    </tr>
+                </>
+            ) : (
+                <tr>
+                    <td colSpan="4">Select a call log to view details</td>
+                </tr>
+            )}
+        </tbody>
+    </table>
+</div>
 
 
                     <form className="questionnaire" onSubmit={handleSubmit}>
@@ -600,7 +617,7 @@ const paginateData = (data) => {
                         </div>
                         <div className="question">
                             <label>Remarks (Optional)</label>
-                            <textarea rows="4" value={remarks} onChange={(e) => setRemarks(e.target.value)} ></textarea>
+                            <textarea rows="2" value={remarks} onChange={(e) => setRemarks(e.target.value)} ></textarea>
                         </div>
                         <div className="submit-container">
                             <button type="submit">Submit</button>

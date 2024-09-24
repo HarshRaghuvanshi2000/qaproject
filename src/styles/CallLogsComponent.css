@@ -59,6 +59,7 @@ audio {
     margin-bottom: 20px;
 } 
 /* Call information section styles */
+/* Call information section styles */
 .call-information {
     margin-bottom: 20px;
 }
@@ -66,12 +67,87 @@ audio {
 .call-information table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for table */
 }
 
 .call-information table td {
-    padding: 8px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
+    vertical-align: top;
+    font-size: 15px; /* Increased text size */
+    color: #333;
 }
+
+/* Left-side field labels */
+.field-label {
+    font-weight: bold;
+    background-color: #f1f1f1; /* Light grey for background */
+    padding: 12px 15px; /* Adjust padding for larger text */
+    color: #555;
+    text-align: left; /* Align labels to the right for better readability */
+    width: 25%; /* Ensure left side occupies less space */
+    font-size: 15px; /* Increased text size */
+}
+
+/* Priority badges */
+.priority {
+    display: inline-block;
+    font-size: 14px; /* Increased text size */
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 5px 12px; /* Slightly larger padding */
+    border-radius: 15px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Colors for the priority levels */
+.priority.high {
+    color: #fff;
+    background-color: #e74c3c; /* Bright red */
+}
+
+.priority.medium {
+    color: #333;
+    background-color: #f1c40f; /* Warm yellow */
+}
+
+.priority.low {
+    color: #fff;
+    background-color: #27ae60; /* Flat green */
+}
+
+/* Row hover effect */
+.call-information table tr:hover {
+    background-color: #f7f7f7;
+    transition: background-color 0.3s ease;
+}
+
+/* Additional Info row */
+.call-information table td[colspan="3"] {
+    white-space: normal; /* Wrap text in long cells */
+    word-wrap: break-word; /* Break long words */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .call-information table {
+        font-size: 12px;
+    }
+    
+    .field-label {
+        text-align: left; /* Align labels left for smaller screens */
+        padding: 8px;
+    }
+
+    .call-information table td {
+        padding: 8px;
+    }
+}
+
 
 /* Questionnaire form styles */
 .questionnaire {
