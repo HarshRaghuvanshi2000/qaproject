@@ -7,7 +7,16 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
 
   // Helper function to format milliseconds to "MM Min SS Sec"
   const formatMillisToMinSec = (millis) => {
-    if (millis == null) return 'N/A'; // Handle null or undefined
+    if (millis == null) return (
+      <span style={{
+          color: '#495057', // Dark gray
+          fontStyle: 'italic', 
+          backgroundColor: '#f8f9fa', // Light background
+          padding: '2px 4px', // Padding for better visibility
+      }}>
+          Not Selected
+      </span>
+  ); // Handle null or undefined
     const minutes = Math.floor(millis / 60000);
     const seconds = Math.floor((millis % 60000) / 1000);
     return `${String(minutes).padStart(2, '0')} Min ${String(seconds).padStart(2, '0')} Sec`;
@@ -15,7 +24,16 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
 
   // Helper function to format timestamp in milliseconds to a date-time string
   const formatMillisToDateTime = (millis) => {
-    if (millis == null || isNaN(millis)) return 'N/A'; // Handle null, undefined, or invalid numbers
+    if (millis == null || isNaN(millis)) return (
+      <span style={{
+          color: '#495057', // Dark gray
+          fontStyle: 'italic', 
+          backgroundColor: '#f8f9fa', // Light background
+          padding: '2px 4px', // Padding for better visibility
+      }}>
+          Not Selected
+      </span>
+  ); // Handle null, undefined, or invalid numbers
   
     const date = new Date(parseInt(millis, 10)); // Convert milliseconds to Date object
     if (isNaN(date.getTime())) return 'Invalid Date'; // Check if date is valid
@@ -32,7 +50,20 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
   // Helper function to handle null or undefined values
-  const formatValue = (value) => (value != null ? value : 'N/A');
+  const formatValue = (value) => {
+    return value != null && value !== '' 
+        ? value 
+        : (
+            <span style={{
+                color: '#495057', // Dark gray
+                fontStyle: 'italic', 
+                backgroundColor: '#f8f9fa', // Light background
+                padding: '2px 4px', // Padding for better visibility
+            }}>
+                Not Selected
+            </span>
+        );
+};
 
   return isOpen ? (
     <Draggable nodeRef={popupRef} handle=".popup-header">

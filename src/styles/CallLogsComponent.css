@@ -249,70 +249,7 @@ form button[type="submit"]:hover {
     background-color: #f0f8ff; /* Light blue background */
     border: 1px solid #d6e9f5;
 }
-/* Custom container styles */
-.rhap_container {
-    background-color: #f8f9fa; /* Light gray background */
-    border-radius: 10px;
-    border: 1px solid #a7a8aa; /* Dark blue border */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-/* Custom play/pause button styles */
-.rhap_main-controls .rhap_play_pause-button {
-    color: #4208a1; /* Dark blue color */
-    background-color: #ffffff; /* White background */
-}
-
-.rhap_main-controls .rhap_play_pause-button:hover {
-    color: #0056b3; /* Slightly lighter blue on hover */
-}
-
-/* Custom progress bar styles */
-.rhap_progress-bar {
-    background-color: #e9ecef; /* Light gray background */
-    border-radius: 3px;
-}
-
-.rhap_progress-bar .rhap_progress-filled {
-    background-color: #004085; /* Dark blue progress */
-}
-
-/* Custom volume bar styles */
-.rhap_volume-bar {
-    background-color: #e9ecef; /* Light gray background */
-    border-radius: 3px;
-}
-
-.rhap_volume-bar .rhap_volume-filled {
-    background-color: #004085; /* Dark blue volume progress */
-}
-
-/* Custom indicators */
-.rhap_progress-indicator {
-    background-color: #004085; /* Dark blue indicator */
-}
-
-.rhap_volume-indicator {
-    color: #004085; /* Dark blue volume icon */
-}
-
-/* Custom loop button styles */
-.rhap_loop--on {
-    color: #084587; /* Dark blue color when loop is on */
-}
-
-.rhap_loop--off {
-    color: #6c757d; /* Gray color when loop is off */
-}
-
-/* Custom paused and playing status */
-.rhap_play-status--paused .rhap_progress-bar {
-    background-color: #e9ecef; /* Light gray when paused */
-}
-
-.rhap_play-status--playing .rhap_progress-bar {
-    background-color: #e9ecef; /* Dark blue when playing */
-}
 /* Specific styling for <td> elements */
 .call-logs-table td {
     max-width: 200px; /* Adjust this value as needed */
@@ -362,4 +299,98 @@ form button[type="submit"]:hover {
     transform: translate(-50%, -50%);
     z-index: 1050;
     transition: opacity 0.5s ease-in-out;
+}
+/* Overall container */
+.audio-player-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin: 20px;
+    background-color: #e3f2fd;  /* Light blue background */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Softer shadow for elevation */
+    width: 100%;  /* Full width of the card */
+  }
+  
+  /* Customize the default audio player */
+  .rhap_container {
+    background-color: #F8F9FA !important;   /* White background for player */
+    border-radius: 10px;
+    border: 2px solid #003366;  /* Deep blue border */
+    width: 100%;  /* Take full width of the container */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+  }
+  
+  /* Customize buttons and controls */
+  .rhap_main-controls-button,
+  .rhap_volume-button,
+  .rhap_repeat-button,
+  .rhap_forward-button,
+  .rhap_skip-forward-button,
+  .rhap_skip-backward-button {
+    background-color: #003366;  /* Deep blue background for all control buttons */
+    color: #ffffff;             /* White icon color */
+    /* border-radius: 50%;         Rounded buttons */
+    padding: 10px;
+    border: none;               /* Remove default border */
+  }
+  
+  .rhap_main-controls-button:hover,
+  .rhap_volume-button:hover,
+  .rhap_repeat-button:hover,
+  .rhap_forward-button:hover,
+  .rhap_skip-forward-button:hover,
+  .rhap_skip-backward-button:hover {
+    background-color: #0055cc;  /* Slightly darker blue on hover */
+  }
+  
+  /* Progress Bar */
+  .rhap_progress-bar {
+    background-color: #cce6ff;  /* Light blue background for progress bar */
+    border-radius: 5px;
+  }
+  
+  .rhap_progress-indicator {
+    background-color: #003366;  /* Deep blue for progress indicator */
+    border-radius: 50%;
+  }
+  
+  .rhap_progress-filled {
+    background-color: #00294d;  /* Darker blue for filled part of progress bar */
+  }
+  
+  /* Time text */
+  .rhap_time {
+    color: #003366;  /* Deep blue for time display */
+    font-weight: bold;
+  }
+  
+  /* Volume control slider */
+  .rhap_volume-bar {
+    background-color: #cce6ff;  /* Light blue for volume bar */
+  }
+  
+  .rhap_volume-indicator {
+    background-color: #003366;  /* Deep blue for volume indicator */
+  }
+  
+  /* Custom font and text */
+  .rhap_container {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    color: #003366; /* Deep blue tone for text */
+  }
+  
+
+  
+  .rhap_main-controls-button svg {
+    color: #003366;
+  }
+  .audio-player button {
+    margin: 0 5px;  /* Adds horizontal spacing between buttons */
+  }
+  .question-placeholder {
+    height: 48px; /* Adjust the height based on the layout */
 }

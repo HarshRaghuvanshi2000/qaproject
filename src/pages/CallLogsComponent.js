@@ -60,7 +60,20 @@ const CallLogsComponent = () => {
     const displayValue= (value) => {
         return value != null && value !== '' ? value : 'N/A';
       }
-      
+      const displayValueNotSelected = (value) => {
+        return value != null && value !== '' 
+            ? value 
+            : (
+                <span style={{
+                    color: '#495057', // Dark gray
+                    fontStyle: 'italic', 
+                    backgroundColor: '#f8f9fa', // Light background
+                    padding: '2px 4px', // Padding for better visibility
+                }}>
+                    Not Selected
+                </span>
+            );
+    };
   const audioPlayerRef = useRef(null);
 
   useEffect(() => {
@@ -443,9 +456,9 @@ const paginateData = (data) => {
             }`}
         >
             <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-            <td>{displayValue(file.event_maintype)}</td>
-            <td>{displayValue(file.event_subtype)}</td>
-            <td>{displayValue(formatDuration(file.call_duration_millis))}</td>
+            <td>{displayValueNotSelected(file.event_maintype)}</td>
+            <td>{displayValueNotSelected(file.event_subtype)}</td>
+            <td>{displayValueNotSelected(formatDuration(file.call_duration_millis))}</td>
             <td
                 style={{
                     color:
@@ -510,6 +523,8 @@ const paginateData = (data) => {
                                 setTimeout(() => setShowErrorMessage(false), 3000); // Hide after 3 seconds
                             }}
                             onEnded={() => setIsPlaying(false)}
+                            className="audio-player"  // Adds a custom class to target buttons with CSS
+
                         />
                     </div>
                     <div className="call-information"> 
@@ -520,9 +535,9 @@ const paginateData = (data) => {
                     {/* First Row - Event Type, Event Subtype */}
                     <tr>
                         <td className="field-label">Event Type:</td>
-                        <td>{displayValue(currentLogDetails.event_maintype)}</td>
+                        <td>{displayValueNotSelected(currentLogDetails.event_maintype)}</td>
                         <td className="field-label">Event Subtype:</td>
-                        <td>{displayValue(currentLogDetails.event_subtype)}</td>
+                        <td>{displayValueNotSelected(currentLogDetails.event_subtype)}</td>
                     </tr>
                     
                     {/* Second Row - Priority, Near PS */}
@@ -530,25 +545,25 @@ const paginateData = (data) => {
                         <td className="field-label">Priority:</td>
                         <td>
                                                 <span className={`priority ${currentLogDetails.priority ? currentLogDetails.priority.toLowerCase() : ''}`}>
-                                                    {currentLogDetails.priority ? displayValue(currentLogDetails.priority) : 'Not Selected'}
+                                                    {currentLogDetails.priority ? displayValueNotSelected(currentLogDetails.priority) : 'Not Selected'}
                                                 </span>
                                             </td>
                         <td className="field-label">Near PS:</td>
-                        <td>{displayValue(currentLogDetails.near_ps)}</td>
+                        <td>{displayValueNotSelected(currentLogDetails.near_ps)}</td>
                     </tr>
                     
                     {/* Third Row - District Code, Call Duration */}
                     <tr>
                         <td className="field-label">District Code:</td>
-                        <td>{displayValue(currentLogDetails.district_code)}</td>
+                        <td>{displayValueNotSelected(currentLogDetails.district_code)}</td>
                         <td className="field-label">Call Duration:</td>
-                        <td>{displayValue(formatDuration(currentLogDetails.call_duration_millis))}</td>
+                        <td>{displayValueNotSelected(formatDuration(currentLogDetails.call_duration_millis))}</td>
                     </tr>
 
                     {/* Fourth Row - Additional Information */}
                     <tr>
                         <td className="field-label">Additional Info:</td>
-                        <td colSpan="3">{displayValue(currentLogDetails.addl_info)}</td>
+                        <td colSpan="3">{displayValueNotSelected(currentLogDetails.addl_info)}</td>
                     </tr>
                 </>
             ) : (
@@ -561,68 +576,92 @@ const paginateData = (data) => {
 </div>
 
 
-                    <form className="questionnaire" onSubmit={handleSubmit}>
-                        <h3 className="questionnaire-title">Questionnaire</h3>
-                        <div className="question">
-                            <label>1. Compliance of SOP</label>
-                            <div className="options">
-                                <label><input type="radio" name="q1" value="1" checked={sopScore === '1'} onChange={(e) => setSopScore(e.target.value)} /> Poor</label>
-                                <label><input type="radio" name="q1" value="2" checked={sopScore === '2'} onChange={(e) => setSopScore(e.target.value)} /> Good</label>
-                                <label><input type="radio" name="q1" value="3" checked={sopScore === '3'} onChange={(e) => setSopScore(e.target.value)} /> Excellent</label>
-                            </div>
-                        </div>
-                        <div className="question">
-                            <label>2. Active listening & proper response</label>
-                            <div className="options">
-                                <label><input type="radio" name="q2" value="1" checked={activeListeningScore === '1'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Poor</label>
-                                <label><input type="radio" name="q2" value="2" checked={activeListeningScore === '2'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Good</label>
-                                <label><input type="radio" name="q2" value="3" checked={activeListeningScore === '3'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Excellent</label>
-                            </div>
-                        </div>
-                        <div className="question">
-                            <label>3. Correct and relevant details capturing</label>
-                            <div className="options">
-                                <label>
-                                    <input type="radio" name="q3" value="1" checked={releventDetailScore === '1'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Poor
-                                </label>
-                                <label>
-                                    <input type="radio" name="q3" value="2" checked={releventDetailScore === '2'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Good
-                                </label>
-                                <label>
-                                    <input type="radio" name="q3" value="3" checked={releventDetailScore === '3'} onChange={(e) => setReleventDetailScore(e.target.value)} disabled={signalTypeId !== '1'} /> Excellent
-                                </label>
-                            </div>
-                        </div>
-                        <div className="question">
-                            <label>4. Correct address capturing</label>
-                            <div className="options">
-                                <label>
-                                    <input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Poor
-                                </label>
-                                <label>
-                                    <input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Good
-                                </label>
-                                <label>
-                                    <input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} disabled={signalTypeId !== '1'} /> Excellent
-                                </label>
-                            </div>
-                        </div>
-                        <div className="question">
-                            <label>5. Call handled time</label>
-                            <div className="options">
-                                <label><input type="radio" name="q5" value="1" checked={callHandledTimeScore === '1'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Poor</label>
-                                <label><input type="radio" name="q5" value="2" checked={callHandledTimeScore === '2'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Good</label>
-                                <label><input type="radio" name="q5" value="3" checked={callHandledTimeScore === '3'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Excellent</label>
-                            </div>
-                        </div>
-                        <div className="question">
-                            <label>Remarks (Optional)</label>
-                            <textarea rows="2" value={remarks} onChange={(e) => setRemarks(e.target.value)} ></textarea>
-                        </div>
-                        <div className="submit-container">
-                            <button type="submit">Submit</button>
-                        </div>
-                    </form>
+<form className="questionnaire" onSubmit={handleSubmit}> 
+    <h3 className="questionnaire-title">Questionnaire</h3>
+    
+    {/* Question 1 */}
+    <div className="question">
+        <label>1. Compliance of SOP</label>
+        <div className="options">
+            <label><input type="radio" name="q1" value="1" checked={sopScore === '1'} onChange={(e) => setSopScore(e.target.value)} /> Poor</label>
+            <label><input type="radio" name="q1" value="2" checked={sopScore === '2'} onChange={(e) => setSopScore(e.target.value)} /> Good</label>
+            <label><input type="radio" name="q1" value="3" checked={sopScore === '3'} onChange={(e) => setSopScore(e.target.value)} /> Excellent</label>
+        </div>
+    </div>
+
+    {/* Question 2 */}
+    <div className="question">
+        <label>2. Active listening & proper response</label>
+        <div className="options">
+            <label><input type="radio" name="q2" value="1" checked={activeListeningScore === '1'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Poor</label>
+            <label><input type="radio" name="q2" value="2" checked={activeListeningScore === '2'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Good</label>
+            <label><input type="radio" name="q2" value="3" checked={activeListeningScore === '3'} onChange={(e) => setActiveListeningScore(e.target.value)} /> Excellent</label>
+        </div>
+    </div>
+ {/* Question 5 */}
+ <div className="question">
+        <label>3. Call handled time</label>
+        <div className="options">
+            <label><input type="radio" name="q5" value="1" checked={callHandledTimeScore === '1'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Poor</label>
+            <label><input type="radio" name="q5" value="2" checked={callHandledTimeScore === '2'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Good</label>
+            <label><input type="radio" name="q5" value="3" checked={callHandledTimeScore === '3'} onChange={(e) => setCallHandledTimeScore(e.target.value)} /> Excellent</label>
+        </div>
+    </div>
+    {/* Question 3: Conditional Rendering */}
+    {signalTypeId == '1' && (
+        <div className="question">
+            <label>4. Correct and relevant details capturing</label>
+            <div className="options">
+                <label>
+                    <input type="radio" name="q3" value="1" checked={releventDetailScore === '1'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Poor
+                </label>
+                <label>
+                    <input type="radio" name="q3" value="2" checked={releventDetailScore === '2'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Good
+                </label>
+                <label>
+                    <input type="radio" name="q3" value="3" checked={releventDetailScore === '3'} onChange={(e) => setReleventDetailScore(e.target.value)} /> Excellent
+                </label>
+            </div>
+        </div>
+    )}
+
+    {/* Question 4: Conditional Rendering */}
+    {signalTypeId == '1' && (
+        <div className="question">
+            <label>5. Correct address capturing</label>
+            <div className="options">
+                <label>
+                    <input type="radio" name="q4" value="1" checked={addressTaggingScore === '1'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Poor
+                </label>
+                <label>
+                    <input type="radio" name="q4" value="2" checked={addressTaggingScore === '2'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Good
+                </label>
+                <label>
+                    <input type="radio" name="q4" value="3" checked={addressTaggingScore === '3'} onChange={(e) => setAddressTaggingScore(e.target.value)} /> Excellent
+                </label>
+            </div>
+        </div>
+    )}
+
+
+    {/* Remarks */}
+    <div className="question">
+        <label>Remarks (Optional)</label>
+        {/* Increase the textarea size if signalTypeId is '1' */}
+        <textarea 
+            rows={signalTypeId === '1' ? '2' : '4'}  // Adjust size based on signalTypeId
+            style={{ width: '100%', fontSize: '16px', padding: '10px' }} 
+            value={remarks} 
+            onChange={(e) => setRemarks(e.target.value)}
+        ></textarea>
+    </div>
+
+    {/* Submit Button */}
+    <div className="submit-container">
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
                     {showErrorMessage && (
                         <div className="error-popup">
                             <p>{errorMessage}</p>
