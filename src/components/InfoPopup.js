@@ -76,7 +76,12 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
           <p><strong>Event Type:</strong> {formatValue(logDetails.event_maintype)}</p>
           <p><strong>Event Registration Time:</strong> {formatMillisToDateTime(logDetails.event_registration_time)}</p>
           <p><strong>Event Subtype:</strong> {formatValue(logDetails.event_subtype)}</p>
-          <p><strong>Priority:</strong> {formatValue(logDetails.priority)}</p>
+          <p>
+            <strong>Priority:</strong>
+            <span className={`priority ${logDetails.priority ? logDetails.priority.toLowerCase() : ''}`}>
+              {formatValue(logDetails.priority)}
+            </span>
+          </p>
           <p><strong>Additional Info:</strong> {formatValue(logDetails.addl_info)}</p>
           <p><strong>Victim Address:</strong> {formatValue(logDetails.victim_address)}</p>
           <p><strong>Victim Age:</strong> {formatValue(logDetails.victim_age)}</p>

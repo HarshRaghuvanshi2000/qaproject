@@ -32,3 +32,21 @@
 .popup-content {
   margin-top: 10px;
 }
+.priority.high {
+  color: #fff;
+  background-color: #e74c3c; /* Bright red */
+}
+
+.priority.medium {
+  color: #333;
+  background-color: #f1c40f; /* Warm yellow */
+}
+
+.priority.low {
+  color: #fff;
+  background-color: #27ae60; /* Flat green */
+}
+.priority.emergency {
+  color: #fff;
+  background-color: #fd1d09; /* Flat green */
+}
