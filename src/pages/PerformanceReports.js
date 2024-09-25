@@ -31,7 +31,7 @@ const PerformanceReports = () => {
 
       const formatDurationFromSeconds = (totalSeconds) => {
         const minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
-        const seconds = totalSeconds % 60; // Calculate remaining seconds
+        const seconds = (totalSeconds % 60).toFixed(2); // Calculate remaining seconds and fix to 2 decimal places
         return `${minutes} Min ${seconds} Sec`; // Return formatted string
       };
     // Fetch data based on the current parameters

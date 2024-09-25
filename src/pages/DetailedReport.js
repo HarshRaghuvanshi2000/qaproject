@@ -25,6 +25,9 @@ const DetailedReport = () => {
         const seconds = totalSeconds % 60; // Calculate remaining seconds
         return `${minutes} Min ${seconds} Sec`; // Return formatted string
       };
+      const displayValue= (value) => {
+        return value != null && value !== '' ? value : 'N/A';
+      }
     const getQueryParams = () => {
         const searchParams = new URLSearchParams(location.search);
         return {
@@ -187,12 +190,12 @@ const DetailedReport = () => {
                                     <td>{item.co_name}</td>
                                     <td>{item.co_employee_code}</td>
                                     <td>{item.sop_score}</td>
-                                    <td>{item.active_listening_score}</td>
-                                    <td>{item.relevent_detail_score}</td>
-                                    <td>{item.address_tagging_score}</td>
+                                    <td>{displayValue(item.active_listening_score)}</td>
+                                    <td>{displayValue(item.relevent_detail_score)}</td>
+                                    <td>{displayValue(item.address_tagging_score)}</td>
                                     <td>{item.call_handled_time_score}</td>
                                     <td>{formatDurationFromSeconds(item.sco_qa_time)}</td>
-                                    <td>{item.sco_remarks}</td>
+                                    <td>{displayValue(item.sco_remarks)}</td>
                                 </tr>
                             ))}
                         </tbody>
