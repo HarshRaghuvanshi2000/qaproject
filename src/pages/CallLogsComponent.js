@@ -4,14 +4,14 @@ import { FaPlay, FaPause, FaBackward, FaForward } from 'react-icons/fa'; // Add 
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import '../App.css';
-import { getCallData, submitCoQaData } from '../services/api';
+import { getCallData, submitCoQaData,getStatus } from '../services/api';
 import '../styles/SuccessPopup.css';
 import { useLocation } from 'react-router-dom';
 import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup component
 
 const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName='
-const WS_BASE_URL ='ws://localhost:3000';
-// const WS_BASE_URL ='ws://10.26.0.19:3001';
+// const WS_BASE_URL ='ws://localhost:3000';
+const WS_BASE_URL ='ws://10.26.0.19:3001';
 
 const itemsPerPage = 11;
 
@@ -49,6 +49,8 @@ const CallLogsComponent = () => {
     const userEmployeeCode = localStorage.getItem('employeeCode');
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
     const [currentCallId, setCurrentCallId] = useState(null); // Track the currently reviewed call
+    const [currentTime, setCurrentTime] = useState(0);
+
 
     const formatDuration = (durationMillis) => {
         if (durationMillis == null) return null;
@@ -75,17 +77,47 @@ const CallLogsComponent = () => {
             );
     };
   const audioPlayerRef = useRef(null);
-
+  const getSignalStatus = async (signalId) => {
+    try {
+      // Call the getStatus function to fetch the status for the given signalId
+      const data = await getStatus(signalId);
+      
+      // Check if data exists and contains at least one result
+      if (data && data.length > 0) {
+        // Extract the review_status from the first record in the result
+        const reviewStatus = data[0].review_status;
+        console.log("Review Status:", reviewStatus);
+  
+        // Return the review_status for further use
+        return reviewStatus;
+      } else {
+        // No data found for the given signalId
+        return null;
+      }
+    } catch (error) {
+      // Handle any errors during the API request or data processing
+      console.error("Error fetching call data:", error);
+      return null;
+    }
+  };
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (currentLogDetails && currentLogDetails.review_status === 'Pending' && isPlaying) {
-        socket.send(JSON.stringify({
-          type: 'UPDATE_STATUS',
-          userId: employeeCode,
-          callId: currentLogDetails.signal_id,
-          status: 'Pending', // Update the call status to "Pending" on page refresh or navigation
-        }));
-      }
+        if(currentLogDetails){
+
+        getSignalStatus(currentLogDetails.signal_id)
+        .then((reviewStatus) => {
+          // If review_status is 'Completed', skip the logic
+          if (reviewStatus === 'Pending') {
+            if (currentLogDetails && currentLogDetails.review_status === 'Pending' && isPlaying) {
+                socket.send(JSON.stringify({
+                  type: 'UPDATE_STATUS',
+                  userId: employeeCode,
+                  callId: currentLogDetails.signal_id,
+                  status: 'Pending', // Update the call status to "Pending" on page refresh or navigation
+                }));
+              }          }
+        });
+    }
     };
   
     // Attach the event listener for beforeunload
@@ -93,9 +125,10 @@ const CallLogsComponent = () => {
   
     // Clean up the event listener when component unmounts
     return () => {
+        handleBeforeUnload();
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [currentLogDetails, isPlaying, socket, employeeCode]);
+  }, [currentLogDetails,socket]);
   // Step 1: Fetch call data before establishing WebSocket connection
   useEffect(() => {
       const fetchCallData = async () => {
@@ -143,7 +176,6 @@ const CallLogsComponent = () => {
   const handleWebSocketMessage = (message) => {
 
     if (message.type === 'INITIAL_CALL_STATUSES') {
-        console.log(message);
         // Initial setup to load all the current call statuses
         setCallLogs((prevLogs) =>
           prevLogs.map((log) => {
@@ -165,9 +197,6 @@ const CallLogsComponent = () => {
         );
       }
       if (message.type === 'STATUS_UPDATE' ) {
-        console.log(message);
-        console.log('aagya');
-
           setCallLogs((prevLogs) =>
               prevLogs.map((log) => {
                   if (log.signal_id === message.callId) {
@@ -204,7 +233,25 @@ const CallLogsComponent = () => {
         setIsPlaying(true);
     }
 }, [currentAudio]);
+useEffect(() => {
+    // Access the underlying audio element
+    const audioElement = audioPlayerRef.current?.audio.current;
 
+    if (audioElement) {
+        // Add a 'seeked' event listener
+        const handleSeeked = () => {
+            setCurrentTime(audioElement.currentTime); // Update state with the current time
+            console.log('Seeked to time (seconds):', audioElement.currentTime);
+        };
+
+        audioElement.addEventListener('seeked', handleSeeked);
+
+        // Cleanup listener on component unmount
+        return () => {
+            audioElement.removeEventListener('seeked', handleSeeked);
+        };
+    }
+}, []);
   useEffect(() => {
     if (currentLogDetails) {
         // Clear form fields when currentLogDetails change

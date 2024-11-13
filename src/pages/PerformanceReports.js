@@ -63,13 +63,18 @@ const PerformanceReports = () => {
     // Handle search button click
     const handleSearch = () => {
         if (startDate && endDate) {
+            setCurrentPage(1);
             fetchData(); // Fetch data when search button is clicked
         } else {
             console.error('Please fill all required fields');
         }
     };
     
-
+    const handleItemsPerPageChange = (e) => {
+        const value = e.target.value === "All" ? data.length : parseInt(e.target.value);
+        setItemsPerPage(value);
+        setCurrentPage(1); // Reset pagination when itemsPerPage changes
+    };
     const handleSearchTermChange = (e) => {
         setSearchTerm(e.target.value);
     };
@@ -274,8 +279,8 @@ const PerformanceReports = () => {
                             <Form.Label>Items Per Page</Form.Label>
                             <Form.Control
                                 as="select"
-                                value={itemsPerPage}
-                                onChange={(e) => setItemsPerPage(e.target.value === "All" ? data.length : parseInt(e.target.value))}
+                                value={itemsPerPage === data.length ? "All" : itemsPerPage} // Adjust to show "All" when all items are displayed
+                                onChange={handleItemsPerPageChange} // Use the new handler
                             >   <option value={10}>10</option>
                                 <option value={20}>20</option>
                                 <option value={50}>50</option>

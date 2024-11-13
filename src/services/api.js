@@ -202,3 +202,28 @@ export const getScoDetailedData = async (scoEmployeeCode, startDate, endDate) =>
         throw error;
     }
 };
+
+export const getStatus = async (signalId) => {
+    const url = `${BASE_URL}/get-status?signalId=${signalId}`;
+    console.log(url);
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log(response);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch call data');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API error:', error);
+        throw error;
+    }
+};
