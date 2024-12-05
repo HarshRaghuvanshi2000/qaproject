@@ -227,3 +227,26 @@ export const getStatus = async (signalId) => {
         throw error;
     }
 };
+
+export const getCoDetailedData = async (employeeCode, startDate, endDate) => {
+    const url = `${BASE_URL}/co-detailed-data?employeeCode=${employeeCode}&startDate=${startDate}&endDate=${endDate}`;
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log(response);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch detailed report data');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API error:', error);
+        throw error;
+    }
+};

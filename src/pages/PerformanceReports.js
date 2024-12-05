@@ -327,6 +327,8 @@ const PerformanceReports = () => {
                                 <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Tagging Score</th>
                                 <th onClick={() => requestSort('call_handled_time_score')} className={getClassNamesFor('call_handled_time_score')}>Handled Time</th>
                                 <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
+                                <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>
+
                             </>}
                             {reportTypeTable === "SCO" && <>
                                 <th>S.No</th> {/* New column for Sr. No */}
@@ -358,6 +360,11 @@ const PerformanceReports = () => {
                                         <td>{row.address_tagging_score}</td>
                                         <td>{row.call_handled_time_score}</td>
                                         <td>{(row.average_score).toFixed(2)}</td>
+                                        <td>
+                                            <Link to={`/detailed-report?employeeCode=${row.co_employee_code}&startDate=${startDate}&endDate=${endDate}&employeeType=${reportTypeTable}`}>
+                                                Report
+                                            </Link>
+                                        </td>
                                     </>}
                                     {reportTypeTable === "SCO" && <>
                                         <td>{index + 1}</td>
@@ -368,7 +375,7 @@ const PerformanceReports = () => {
                                         <td>{formatDurationFromSeconds(row.average_qa_time)}</td>
                                         <td>{row.pending_calls}</td>
                                         <td>
-                                            <Link to={`/detailed-report?scoEmployeeCode=${row.sco_employee_code}&startDate=${startDate}&endDate=${endDate}`}>
+                                            <Link to={`/detailed-report?employeeCode=${row.sco_employee_code}&startDate=${startDate}&endDate=${endDate}&employeeType=${reportTypeTable}`}>
                                                 Report
                                             </Link>
                                         </td>

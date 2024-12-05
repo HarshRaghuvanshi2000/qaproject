@@ -11,38 +11,45 @@ import { faSort } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { getScoDetailedData } from '../services/api';
+import { getScoDetailedData, getCoDetailedData } from '../services/api'; // Assume you have APIs for both SCO and CO
 
 const DetailedReport = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(12);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
     const [data, setData] = useState([]);
+    const [employeeType, setEmployeeType] = useState('SCO'); // Default type
 
     const location = useLocation();
+
     const formatDurationFromSeconds = (totalSeconds) => {
-        const minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
-        const seconds = totalSeconds % 60; // Calculate remaining seconds
-        return `${minutes} Min ${seconds} Sec`; // Return formatted string
-      };
-      const displayValue= (value) => {
-        return value != null && value !== '' ? value : 'N/A';
-      }
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes} Min ${seconds} Sec`;
+    };
+
+    const displayValue = (value) => (value != null && value !== '' ? value : 'N/A');
+
     const getQueryParams = () => {
         const searchParams = new URLSearchParams(location.search);
         return {
-            scoEmployeeCode: searchParams.get('scoEmployeeCode'),
+            employeeCode: searchParams.get('employeeCode'),
             startDate: searchParams.get('startDate'),
             endDate: searchParams.get('endDate'),
+            employeeType: searchParams.get('employeeType') || 'SCO', // Default to SCO
         };
     };
 
     useEffect(() => {
-        const { scoEmployeeCode, startDate, endDate } = getQueryParams();
+        const { employeeCode, startDate, endDate, employeeType } = getQueryParams();
+        setEmployeeType(employeeType);
 
         const fetchData = async () => {
             try {
-                const result = await getScoDetailedData(scoEmployeeCode, startDate, endDate);
+                const result =
+                    employeeType === 'SCO'
+                        ? await getScoDetailedData(employeeCode, startDate, endDate)
+                        : await getCoDetailedData(employeeCode, startDate, endDate);
                 setData(result);
             } catch (error) {
                 console.error('Failed to fetch detailed report data:', error);
@@ -58,8 +65,7 @@ const DetailedReport = () => {
             direction = 'descending';
         }
         setSortConfig({ key, direction });
-        let sortedData = [...data];
-        sortedData.sort((a, b) => {
+        const sortedData = [...data].sort((a, b) => {
             if (a[key] < b[key]) {
                 return direction === 'ascending' ? -1 : 1;
             }
@@ -96,7 +102,7 @@ const DetailedReport = () => {
     const handleExportPDF = () => {
         const doc = new jsPDF();
         doc.setFontSize(16);
-        doc.text('SCO Detailed Report', 14, 22);
+        doc.text(`${employeeType} Detailed Report`, 14, 22);
         doc.setFontSize(12);
         doc.text(`Date: ${getQueryParams().startDate} To ${getQueryParams().endDate}`, 14, 30);
 
@@ -117,21 +123,23 @@ const DetailedReport = () => {
             ])
         });
 
-        doc.save('detailed-report.pdf');
+        doc.save(`${employeeType.toLowerCase()}-detailed-report.pdf`);
     };
 
     const handleExportExcel = () => {
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Detailed Report');
-        XLSX.writeFile(wb, 'detailed-report.xlsx');
+        XLSX.writeFile(wb, `${employeeType.toLowerCase()}-detailed-report.xlsx`);
     };
 
     return (
         <div className="main-content">
             <div className="header-container">
-                <h1 className="detailed-title">SCO Detailed Report</h1>
-                <div className="date-range">Date: {getQueryParams().startDate} To {getQueryParams().endDate}</div>
+                <h1 className="detailed-title">{employeeType} Detailed Report</h1>
+                <div className="date-range">
+                    Date: {getQueryParams().startDate} To {getQueryParams().endDate}
+                </div>
                 <Dropdown className="export-dropdown">
                     <Dropdown.Toggle variant="primary" id="dropdown-basic">
                         Export

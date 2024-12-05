@@ -12,7 +12,7 @@ import InfoPopup from '../components/InfoPopup'; // Import the InfoPopup compone
 const AUDIO_BASE_URL = 'http://10.26.0.8:8080/ACDSAdmin-1.2/AudioDownloadServlet?absoluteFileName='
 // const WS_BASE_URL ='ws://localhost:3000';
 const WS_BASE_URL ='ws://10.26.0.19:3001';
-
+// const WS_BASE_URL ='ws://172.16.110.206:3000';
 const itemsPerPage = 11;
 
 const CallLogsComponent = () => {
@@ -50,6 +50,7 @@ const CallLogsComponent = () => {
     const employeeCode = localStorage.getItem('username');; // Assign a unique user ID to identify the user
     const [currentCallId, setCurrentCallId] = useState(null); // Track the currently reviewed call
     const [currentTime, setCurrentTime] = useState(0);
+    const [isAdmin, setIsAdmin] = useState(false);
 
 
     const formatDuration = (durationMillis) => {
@@ -103,7 +104,7 @@ const CallLogsComponent = () => {
   useEffect(() => {
     const handleBeforeUnload = () => {
         if(currentLogDetails){
-
+            if (isAdmin) return;
         getSignalStatus(currentLogDetails.signal_id)
         .then((reviewStatus) => {
           // If review_status is 'Completed', skip the logic
@@ -131,14 +132,16 @@ const CallLogsComponent = () => {
   }, [currentLogDetails,socket]);
   // Step 1: Fetch call data before establishing WebSocket connection
   useEffect(() => {
+    if (isAdmin) return;
       const fetchCallData = async () => {
           try {
               const data = await getCallData(signalTypeId, 'yourFromDate', 'yourToDate');
               setCallLogs(data);
 
               // Initialize WebSocket connection after data is loaded
-              initializeWebSocket();
-
+              if (!isAdmin) {
+                initializeWebSocket();
+            }
               const pendingLog = data.find(log => log.review_status === 'Pending');
               if (pendingLog) {
                   setCurrentLogDetails(pendingLog); // Select first pending call log by default
@@ -153,8 +156,20 @@ const CallLogsComponent = () => {
       }
   }, [signalTypeId]);
 
+    useEffect(() => {
+        const designationId = localStorage.getItem('desgId');
+        if (designationId === '75') {
+            setIsAdmin(true);
+        }
+    }, []);
+
   // Step 2: Initialize WebSocket connection
   const initializeWebSocket = () => {
+    const designationId = localStorage.getItem('desgId');
+    if (designationId === '75') {
+        return;
+    } 
+
       const ws = new WebSocket(WS_BASE_URL);
       setSocket(ws);
 
@@ -174,54 +189,44 @@ const CallLogsComponent = () => {
 
   // Step 3: Handle WebSocket messages
   const handleWebSocketMessage = (message) => {
-
     if (message.type === 'INITIAL_CALL_STATUSES') {
-        // Initial setup to load all the current call statuses
+        if (isAdmin) return; // Skip WebSocket message handling for admin users
         setCallLogs((prevLogs) =>
-          prevLogs.map((log) => {
-            const callStatus = message.callStatuses[log.signal_id];
-            if (callStatus) {
-              // If the userId matches, the user sees 'Pending' when they are reviewing
-              if (callStatus.userId === employeeCode && callStatus.status === 'Being Reviewed') {
-                return { ...log, review_status: 'Pending' };
-              } else if (callStatus.status === 'Being Reviewed') {
-                // Other users see 'Being Reviewed'
-                return { ...log, review_status: 'Being Reviewed' };
-              } else {
-                // For any other status (like 'Pending'), apply it directly
-                return { ...log, review_status: callStatus.status };
-              }
-            }
-            return log;
-          })
-        );
-      }
-      if (message.type === 'STATUS_UPDATE' ) {
-          setCallLogs((prevLogs) =>
-              prevLogs.map((log) => {
-                  if (log.signal_id === message.callId) {
-
-                      // If the employeeCode matches, only the current user should see 'Being Reviewed'
-                      if (message.userId === employeeCode && message.status === 'Being Reviewed') {
-                          return { ...log, review_status: 'Pending' };
-                      } else if (message.status === 'Being Reviewed') {
-
-                          // Other users see 'Pending' for the same call if it's reviewed by another user
-                          return { ...log, review_status: 'Being Reviewed' };
-                      } 
-                      else if (message.status === 'Pending'){
+            prevLogs.map((log) => {
+                const callStatus = message.callStatuses[log.signal_id];
+                if (callStatus) {
+                    if (callStatus.status === 'Completed') {
+                        return { ...log, review_status: 'Completed' }; // Ensure "Completed" status persists
+                    } else if (callStatus.userId === employeeCode && callStatus.status === 'Being Reviewed') {
                         return { ...log, review_status: 'Pending' };
-                      }
-                      else {
-                          // For 'Pending' status, apply the message directly
-                          return { ...log, review_status: message.status };
-                      }
-                  }
-                  return log;
-              })
-          );
-      }
-  };
+                    } else if (callStatus.status === 'Being Reviewed') {
+                        return { ...log, review_status: 'Being Reviewed' };
+                    } else {
+                        return { ...log, review_status: callStatus.status };
+                    }
+                }
+                return log;
+            })
+        );
+    } else if (message.type === 'STATUS_UPDATE') {
+        setCallLogs((prevLogs) =>
+            prevLogs.map((log) => {
+                if (log.signal_id === message.callId) {
+                    if (log.review_status === 'Completed') {
+                        return log; // Prevent status change for "Completed"
+                    } else if (message.userId === employeeCode && message.status === 'Being Reviewed') {
+                        return { ...log, review_status: 'Pending' };
+                    } else if (message.status === 'Being Reviewed') {
+                        return { ...log, review_status: 'Being Reviewed' };
+                    } else {
+                        return { ...log, review_status: message.status };
+                    }
+                }
+                return log;
+            })
+        );
+    }
+};
 
   useEffect(() => {
     paginateData(callLogs);
@@ -271,28 +276,35 @@ const paginateData = (data) => {
   };
 
   const handlePlayPause = (file, index) => {
-    if (file.review_status === 'Completed' || file.review_status === 'Being Reviewed') {
-      return;
+    if (file.review_status === 'Completed' && !isAdmin) {
+        return; // Prevent playback for non-admins if status is "Completed"
     }
 
-    if (
-        currentCallId && 
-        currentCallId !== file.signal_id && 
-        callLogs &&
-        !callLogs.some(log => log.signal_id === currentCallId && log.review_status === 'Completed') // Check if currentCallId is not 'Completed'
-    ) {
+    if (!isAdmin && currentCallId && currentCallId !== file.signal_id) {
         socket.send(
             JSON.stringify({
                 type: 'UPDATE_STATUS',
                 userId: employeeCode,
                 callId: currentCallId,
-                status: 'Pending', // Mark the previous call as 'Pending' for all users
+                status: 'Pending', // Mark the previous call as "Pending"
             })
         );
     }
 
-    setCurrentCallId(file.signal_id);
+    if (!isAdmin && file.review_status !== 'Completed') {
+        socket.send(
+            JSON.stringify({
+                type: 'UPDATE_STATUS',
+                userId: employeeCode,
+                callId: file.signal_id,
+                status: 'Being Reviewed', // Mark the current call as "Being Reviewed"
+            })
+        );
+    }
 
+    setCurrentAudio(AUDIO_BASE_URL + file.voice_path);
+    setCurrentCallId(file.signal_id);
+    setCurrentAudioIndex(index);
 
     if (!file.voice_path) {
       setErrorMessage('No audio file found');
@@ -327,9 +339,8 @@ const paginateData = (data) => {
   
 
     const handleInfoClick = (file) => {
-        if (file.review_status === 'Completed' || file.review_status === 'Being Reviewed') {
-            // Prevent access if review status is "Completed" or "Being Reviewed"
-            return;
+        if (file.review_status === 'Completed' && !isAdmin) {
+            return; // Prevent playback for non-admins if status is "Completed"
         }
         setInfoPopupContent(file);
         setInfoPopupOpen(true);
@@ -522,7 +533,7 @@ const paginateData = (data) => {
             <td>
                 <button
                     onClick={() => handlePlayPause(file, index)}
-                    disabled={file.review_status === 'Completed' || file.review_status === 'Being Reviewed'} // Disable button if status is "Completed" or "Being Reviewed"
+                    disabled={!isAdmin && (file.review_status === 'Completed' || file.review_status === 'Being Reviewed')}
                 >
                     {currentAudio === AUDIO_BASE_URL + file.voice_path && isPlaying ? <FaPause /> : <FaPlay />}
                 </button>
@@ -530,7 +541,7 @@ const paginateData = (data) => {
             <td>
                 <button
                     onClick={() => handleInfoClick(file)}
-                    disabled={file.review_status === 'Completed' || file.review_status === 'Being Reviewed'} // Disable button if status is "Completed" or "Being Reviewed"
+                    disabled={!isAdmin && (file.review_status === 'Completed' || file.review_status === 'Being Reviewed')}
                 >
                     Info
                 </button>
@@ -705,7 +716,7 @@ const paginateData = (data) => {
 
     {/* Submit Button */}
     <div className="submit-container">
-        <button type="submit">Submit</button>
+    <button type="submit" disabled={isAdmin}>Submit</button>
     </div>
 </form>
 
