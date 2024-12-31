@@ -25,7 +25,7 @@ const DetailedReport = () => {
     const formatDurationFromSeconds = (totalSeconds) => {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        return `${minutes} Min ${seconds} Sec`;
+        return `${minutes} : ${seconds}`;
     };
 
     const displayValue = (value) => (value != null && value !== '' ? value : 'N/A');

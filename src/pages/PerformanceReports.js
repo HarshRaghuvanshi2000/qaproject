@@ -24,16 +24,17 @@ const PerformanceReports = () => {
     const [startDate, setStartDate] = useState("");
     const formatDuration = (durationMillis) => {
         const totalSeconds = Math.floor(durationMillis / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes} Min ${seconds} Sec`;
-      };
-
-      const formatDurationFromSeconds = (totalSeconds) => {
-        const minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
-        const seconds = (totalSeconds % 60).toFixed(2); // Calculate remaining seconds and fix to 2 decimal places
-        return `${minutes} Min ${seconds} Sec`; // Return formatted string
-      };
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); // Pad minutes to 2 digits
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0'); // Pad seconds to 2 digits
+        return `${minutes} : ${seconds}`;
+    };
+    
+    const formatDurationFromSeconds = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); // Pad minutes to 2 digits
+        const seconds = (totalSeconds % 60).toFixed(0).toString().padStart(2, '0'); // Pad seconds to 2 digits
+        return `${minutes} : ${seconds}`;
+    };
+    
     // Fetch data based on the current parameters
     const fetchData = useCallback(async () => {
         try {
@@ -158,59 +159,103 @@ const PerformanceReports = () => {
     };
 
     const downloadPDF = () => {
-        const doc = new jsPDF();
-        
+        const doc = new jsPDF({ orientation: 'landscape' }); // Landscape orientation
+    
         // Add the first image (left-side logo)
         const img1 = new Image();
         img1.src = logoHaryana;
-        doc.addImage(img1, 'PNG', 10, 10, 30, 30); // Adjust the position and size as needed
-        
+        doc.addImage(img1, 'PNG', 10, 10, 30, 30);
+    
         // Add the second image (right-side logo)
         const img2 = new Image();
         img2.src = logoCdac;
-        doc.addImage(img2, 'PNG', 170, 10, 30, 30); // Adjust the position and size as needed
-        
+        doc.addImage(img2, 'PNG', 250, 10, 30, 30);
+    
         // Add the title and sub-title in the center
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.text('Quality Assurance Management System', 105, 20, null, null, 'center');
+        doc.text('Quality Assurance Management System', 148, 20, null, null, 'center');
     
         // Add the date range below the title
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
-        doc.text(`${reportTypeTable} Performance Report From ${startDate} to ${endDate}`, 105, 28, null, null, 'center');
-        
+        doc.text(`${reportTypeTable} Performance Report From ${startDate} to ${endDate}`, 148, 28, null, null, 'center');
+    
         // Add organization name
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('Emergency Response Centre (ERSS)', 105, 36, null, null, 'center');
-        
+        doc.text('Emergency Response Centre (ERSS)', 148, 36, null, null, 'center');
+    
         // Add organization address
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text('Sector 3, Panchkula, Haryana 134112', 105, 42, null, null, 'center');
-        
-        // Move down to add the table
-        doc.setLineWidth(0.5);
-        doc.line(10, 50, 200, 50); // Add a line below the header
-        
-        // Define table columns based on the reportType
-        const tableColumn = reportTypeTable === "CO"
-            ? ["Name", "Login ID", "Total Calls", "Total Completed Calls", "Average Call Duration", "SOP Score", "Active Listening Score", "Details Capturing Score", "Address Tagging Score", "Handled Time", "Average Score"]
-            : ["Name", "Login ID", "QA Calls", "Completed QA", "Average QA Completion Time", "Average Pending QA Per Day", "Detailed Report"];
+        doc.text('Sector 3, Panchkula, Haryana 134112', 148, 42, null, null, 'center');
     
+        // Add a separator line
+        doc.setLineWidth(0.5);
+        doc.line(10, 50, 280, 50);
+    
+        // Define table columns
+        const tableColumn = reportTypeTable === "CO"
+            ? ["Name", "Login ID", "Total Calls", "Completed Calls", "Avg Call Duration", "SOP Score", "Active Listening", "Details Capturing", "Address Tagging", "Handled Time", "Avg Score"]
+            : ["Name", "Login ID", "QA Calls", "Completed QA", "Avg QA Time", "Pending QA/Day", "Detailed Report"];
+    
+        // Sort data by average_score in ascending order
+        const sortedData = [...data].sort((a, b) => a.average_score - b.average_score);
+    
+        // Create table rows based on the sorted data
         const tableRows = reportTypeTable === "CO" 
-        ? data.map(row => [row.co_name, row.co_employee_code, row.total_calls, row.total_completed_calls, formatDuration(row.average_call_duration_millis), row.sop_score, row.active_listening_score, row.relevent_detail_score, row.address_tagging_score, row.call_handled_time_score, row.average_score])
-        : data.map(row => [row.sco_employee_code, row.sco_employee_code, row.total_calls, row.total_calls, formatDurationFromSeconds(row.average_qa_time), row.pending_calls, "Report"]);
-        // Add the table
+            ? sortedData.map(row => [
+                row.co_name, 
+                row.co_employee_code, 
+                row.total_calls, 
+                row.total_completed_calls, 
+                formatDuration(row.average_call_duration_millis), 
+                row.sop_score, 
+                row.active_listening_score, 
+                row.relevent_detail_score, 
+                row.address_tagging_score, 
+                row.call_handled_time_score, 
+                row.average_score.toFixed(2)
+            ])
+            : sortedData.map(row => [
+                row.sco_employee_code, 
+                row.sco_employee_code, 
+                row.total_calls, 
+                row.total_calls, 
+                formatDurationFromSeconds(row.average_qa_time), 
+                row.pending_calls, 
+                "Report"
+            ]);
+    
+        // Add the table with adjusted widths and scaling
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
-            startY: 55,  // Start after the header
+            startY: 55, // Start after the header
+            styles: {
+                fontSize: 8, // Reduced font size
+                cellPadding: 2, // Smaller padding for compactness
+            },
+            headStyles: {
+                fillColor: [41, 128, 185], // Header background color
+                textColor: [255, 255, 255], // Header text color
+                fontSize: 10, // Header font size
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto' }, // Automatically adjust columns
+                1: { cellWidth: 'auto' },
+                // Add similar columnStyles for others if necessary
+            },
+            theme: 'grid', // Grid theme for better visibility
+            pageBreak: 'auto', // Add page breaks when content overflows
         });
     
         doc.save("report.pdf");
     };
+    
+    
+    
     
 
     const downloadExcel = () => {
@@ -320,7 +365,7 @@ const PerformanceReports = () => {
                                 <th onClick={() => requestSort('co_employee_code')} className={getClassNamesFor('co_employee_code')}>Login ID</th>
                                 <th onClick={() => requestSort('total_calls')} className={getClassNamesFor('total_calls')}>Total Calls</th>
                                 <th onClick={() => requestSort('total_completed_calls')} className={getClassNamesFor('total_completed_calls')}>Total Completed Calls</th>
-                                <th onClick={() => requestSort('average_call_duration_millis')} className={getClassNamesFor('average_call_duration_millis')}>Average Call Duration</th>
+                                <th onClick={() => requestSort('average_call_duration_millis')} className={getClassNamesFor('average_call_duration_millis')}>Average Call Duration (mm:ss)</th>
                                 <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
                                 <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
                                 <th onClick={() => requestSort('relevent_detail_score')} className={getClassNamesFor('relevent_detail_score')}>Details Capturing Score</th>
