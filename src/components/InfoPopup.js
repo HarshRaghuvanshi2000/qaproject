@@ -82,6 +82,7 @@ const InfoPopup = ({ isOpen, onClose, logDetails }) => {
               {formatValue(logDetails.priority)}
             </span>
           </p>
+          <p><strong>Availed Service:</strong> {formatValue(logDetails.service_Ids)}</p>
           <p><strong>Additional Info:</strong> {formatValue(logDetails.addl_info)}</p>
           <p><strong>Victim Address:</strong> {formatValue(logDetails.victim_address)}</p>
           <p><strong>Victim Age:</strong> {formatValue(logDetails.victim_age)}</p>
