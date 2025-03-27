@@ -369,7 +369,7 @@ const PerformanceReports = () => {
                                 <th onClick={() => requestSort('sop_score')} className={getClassNamesFor('sop_score')}>SOP Score</th>
                                 <th onClick={() => requestSort('active_listening_score')} className={getClassNamesFor('active_listening_score')}>Active Listening Score</th>
                                 <th onClick={() => requestSort('relevent_detail_score')} className={getClassNamesFor('relevent_detail_score')}>Details Capturing Score</th>
-                                <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Tagging Score</th>
+                                <th onClick={() => requestSort('address_tagging_score')} className={getClassNamesFor('address_tagging_score')}>Address Capturing Score</th>
                                 <th onClick={() => requestSort('call_handled_time_score')} className={getClassNamesFor('call_handled_time_score')}>Handled Time</th>
                                 <th onClick={() => requestSort('average_score')} className={getClassNamesFor('average_score')}>Average Score</th>
                                 <th onClick={() => requestSort('details_report')} className={getClassNamesFor('details_report')}>Detailed Report</th>

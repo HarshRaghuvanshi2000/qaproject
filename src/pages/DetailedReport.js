@@ -108,11 +108,12 @@ const DetailedReport = () => {
 
         autoTable(doc, {
             startY: 40,
-            head: [['SCO Employee Code', 'CO Name', 'CO Employee Code', 'SOP Score', 'Active Listening Score', 'Relevant Detail Score', 'Address Tagging Score', 'Call Handled Time Score', 'SCO QA Time', 'SCO Remarks']],
+            head: [['SCO Employee Code', 'CO Name', 'CO Employee Code','Event ID','SOP Score', 'Active Listening Score', 'Relevant Detail Score', 'Address Capturing Score', 'Call Handled Time Score', 'SCO QA Time', 'SCO Remarks']],
             body: data.map(item => [
                 item.sco_employee_code,
                 item.co_name,
                 item.co_employee_code,
+                item.event_id,
                 item.sop_score,
                 item.active_listening_score,
                 item.relevent_detail_score,
@@ -168,6 +169,9 @@ const DetailedReport = () => {
                                 <th onClick={() => requestSort('co_employee_code')}>
                                     CO Employee Code <FontAwesomeIcon icon={faSort} />
                                 </th>
+                                <th onClick={() => requestSort('event_id')}>
+                                    Event ID <FontAwesomeIcon icon={faSort} />
+                                </th>
                                 <th onClick={() => requestSort('sop_score')}>
                                     SOP Score <FontAwesomeIcon icon={faSort} />
                                 </th>
@@ -178,7 +182,7 @@ const DetailedReport = () => {
                                     Relevant Detail Score <FontAwesomeIcon icon={faSort} />
                                 </th>
                                 <th onClick={() => requestSort('address_tagging_score')}>
-                                    Address Tagging Score <FontAwesomeIcon icon={faSort} />
+                                    Address Capturing Score <FontAwesomeIcon icon={faSort} />
                                 </th>
                                 <th onClick={() => requestSort('call_handled_time_score')}>
                                     Call Handled Time Score <FontAwesomeIcon icon={faSort} />
@@ -197,6 +201,7 @@ const DetailedReport = () => {
                                     <td>{item.sco_employee_code}</td>
                                     <td>{item.co_name}</td>
                                     <td>{item.co_employee_code}</td>
+                                    <td>{displayValue(item.event_id)}</td>
                                     <td>{item.sop_score}</td>
                                     <td>{displayValue(item.active_listening_score)}</td>
                                     <td>{displayValue(item.relevent_detail_score)}</td>
